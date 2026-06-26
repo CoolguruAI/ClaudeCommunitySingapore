@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Expense Tracker</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f8;color:#0f172a;min-height:100vh}
+  input,select,textarea{font-family:inherit}
+  .input{width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;background:#f8fafc}
+  .input:focus{border-color:#3b82f6;background:#fff}
+  .label{font-size:12px;font-weight:700;color:#475569;display:block;margin-bottom:4px}
+  .btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;transition:opacity 0.15s}
+  .btn:hover{opacity:0.88}
+  .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff}
+  .btn-green{background:#10b981;color:#fff}
+  .btn-red{background:#ef4444;color:#fff}
+  .btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0}
+  .badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block}
+  .badge-blue{background:#dbeafe;color:#1e40af}
+  .badge-green{background:#d1fae5;color:#065f46}
+  .badge-red{background:#fee2e2;color:#991b1b}
+  .badge-amber{background:#fef3c7;color:#92400e}
+  .badge-gray{background:#f3f4f6;color:#374151}
+  .badge-purple{background:#ede9fe;color:#5b21b6}
+  .card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:20px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal{background:#fff;border-radius:16px;max-width:660px;width:100%;max-height:92vh;overflow-y:auto;padding:32px;box-shadow:0 24px 60px rgba(0,0,0,0.2)}
+  .hidden{display:none!important}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .span2{grid-column:1/-1}
+  .flex{display:flex;gap:10px;align-items:center}
+  .flex-between{display:flex;justify-content:space-between;align-items:center}
+  .summary-cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+  .summary-card{flex:1;min-width:140px;border-radius:14px;padding:20px 22px;border:1.5px solid transparent}
+  .alert-box{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;display:flex;gap:10px;margin-bottom:8px}
+  .alert-red{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}
+  .alert-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
+  .alert-green{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+  .receipt-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #f1f5f9;cursor:pointer}
+  .receipt-row:hover{background:#fafbfc}
+  .receipt-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{padding:10px 14px;text-align:left;font-weight:700;color:#475569;background:#f1f5f9}
+  td{padding:10px 14px;border-top:1px solid #e2e8f0}
+  .approval-banner{border-radius:12px;padding:14px 18px;margin-bottom:18px}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.7s linear infinite;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #name-gate{position:fixed;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a5f);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px}
+  .name-card{background:#fff;border-radius:20px;padding:40px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.3)}
+  #header{background:linear-gradient(135deg,#0f172a,#1e3a5f);position:sticky;top:0;z-index:100}
+  #header-inner{max-width:980px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  #filter-bar{background:rgba(255,255,255,0.05);border-top:1px solid rgba(255,255,255,0.08)}
+  #filter-inner{max-width:980px;margin:0 auto;padding:8px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .filter-select{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;border-radius:6px;padding:4px 10px;font-size:12px;outline:none}
+  .filter-select option{background:#1e3a5f}
+  .nav-btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;position:relative;font-family:inherit}
+  .nav-btn.active{background:#3b82f6;color:#fff}
+  .nav-btn.inactive{background:rgba(255,255,255,0.1);color:#94a3b8}
+  .pending-badge{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:17px;height:17px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  #main{max-width:980px;margin:0 auto;padding:24px}
+  .bar-container{flex:1;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px}
+  .bar-blue{background:linear-gradient(90deg,#3b82f6,#6366f1)}
+  .bar-purple{background:linear-gradient(90deg,#8b5cf6,#ec4899)}
+  .month-row{display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 0;border-bottom:1px solid #f1f5f9}
+  .month-children{padding-left:16px;padding-top:10px}
+  .month-exp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;cursor:pointer;background:#f8fafc;margin-bottom:6px}
+  .month-exp-row:hover{background:#f1f5f9}
+  .approval-card{border:1.5px solid;border-radius:12px;padding:14px 18px;margin-bottom:12px}
+  .history-entry{font-size:11px;color:#64748b;margin-bottom:4px}
+  .config-banner{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:#92400e}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}.summary-cards{flex-direction:column}.span2{grid-column:auto}}
+</style>
+</head>
+<body>
+
+<!-- CONFIG — REPLACE WITH YOUR SCRIPT URL AFTER SETUP -->
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUSx2aHxWH9YJKf1k540gZ4ISqdOq1-_KOfU8mu4svam-xuZ7xhprsbPWcHlmB20dL/exec";
+  const APPROVAL_THRESHOLD = 500;
+  const CATEGORIES = ["Electronics & Equipment","Travel & Transport","Meals & Entertainment","Office Supplies","Software & Subscriptions","Marketing","Utilities","Professional Services","Miscellaneous"];
+  const APPROVERS = ["Sarah Tan (CFO)","James Lim (Finance Manager)","Rachel Ng (Director)"];
+  const PAYMENT_METHODS = ["Visa/Master","Cash","AMEX","PayNow","GrabPay","Corporate Card","Other"];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+</script>
+
+<!-- Name Gate -->
+<div id="name-gate">
+  <div class="name-card">
+    <div style="font-size:40px;margin-bottom:16px">🧾</div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:6px;color:#0f172a">Expense Tracker</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:28px">Shared team expense submission & approval portal.<br/>Enter your name to continue.</div>
+    <label class="label" style="text-align:left">Your Name *</label>
+    <input id="name-input" class="input" placeholder="e.g. John Tan" style="margin-bottom:16px;font-size:16px;padding:12px 14px" onkeydown="if(event.key==='Enter')enterApp()"/>
+    <button class="btn btn-primary" onclick="enterApp()" style="width:100%;padding:13px;font-size:15px">Enter →</button>
+    <div style="margin-top:16px;font-size:11px;color:#94a3b8">All submissions are shared and visible to the Finance Manager in real time.</div>
+  </div>
+</div>
+
+<!-- Header -->
+<div id="header">
+  <div id="header-inner">
+    <div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">Finance Manager · Live</div>
+      <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-0.02em">Expense Tracker</div>
+    </div>
+    <div class="flex" style="flex-wrap:wrap">
+      <div style="font-size:11px;color:#475569;background:rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px">
+        👤 <span id="user-label"></span>
+        <span id="sync-status" style="margin-left:8px"></span>
+      </div>
+      <button class="nav-btn active" id="nav-dashboard" onclick="setView('dashboard')">📊 Dashboard</button>
+      <button class="nav-btn inactive" id="nav-list" onclick="setView('list')">📋 Receipts</button>
+      <button class="nav-btn inactive" id="nav-approvals" onclick="setView('approvals')">
+        🔐 Approvals<span id="pending-badge" class="pending-badge hidden"></span>
+      </button>
+      <button class="btn btn-green" onclick="openAddModal()" style="padding:7px 16px;font-size:12px">+ Add Receipt</button>
+    </div>
+  </div>
+  <div id="filter-bar">
+    <div id="filter-inner">
+      <span style="color:#64748b;font-size:12px;font-weight:600">Filter:</span>
+      <select id="filter-month" class="filter-select" onchange="renderAll()"><option value="All">All Months</option></select>
+      <select id="filter-cat" class="filter-select" onchange="renderAll()"><option value="All">All Categories</option></select>
+      <button onclick="clearFilters()" id="clear-filters" class="hidden" style="background:none;border:1px solid rgba(255,255,255,0.2);color:#94a3b8;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">✕ Clear</button>
+      <button onclick="loadExpenses()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.15);color:#64748b;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">↻ Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <!-- Config warning -->
+  <div id="config-warning" class="config-banner hidden">
+    ⚠️ <strong>Setup required:</strong> Replace <code>YOUR_APPS_SCRIPT_URL_HERE</code> in this file with your Apps Script Web App URL. See the setup instructions document.
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-state" style="text-align:center;padding:60px;color:#64748b">
+    <div class="spinner" style="width:32px;height:32px;margin:0 auto 16px"></div>
+    <div style="font-size:15px;font-weight:600">Loading shared expenses…</div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards hidden" id="summary-cards"></div>
+
+  <!-- Alerts -->
+  <div id="alerts-section" class="hidden" style="margin-bottom:24px">
+    <div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em">⚡ Insights & Alerts</div>
+    <div id="alerts-list"></div>
+  </div>
+
+  <!-- Views -->
+  <div id="view-dashboard"></div>
+  <div id="view-list" class="hidden"></div>
+  <div id="view-approvals" class="hidden"></div>
+</div>
+
+<!-- Add Receipt Modal -->
+<div id="add-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="flex-between" style="margin-bottom:22px">
+      <div>
+        <div style="font-size:18px;font-weight:800">Add New Receipt</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px">Submitting as <strong id="submitter-label" style="color:#3b82f6"></strong></div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeAddModal()" style="padding:6px 12px;font-size:16px">✕</button>
+    </div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div><label class="label">Date *</label><input type="date" id="f-date" class="input"/></div>
+      <div><label class="label">Receipt No.</label><input id="f-receipt" class="input" placeholder="e.g. R003655"/></div>
+      <div class="span2"><label class="label">Vendor / Merchant *</label><input id="f-vendor" class="input" placeholder="e.g. Grab · Singapore"/></div>
+      <div>
+        <label class="label">Category</label>
+        <select id="f-category" class="input"></select>
+      </div>
+      <div>
+        <label class="label">Payment Method</label>
+        <select id="f-payment" class="input"></select>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#475569;margin-bottom:10px">Line Items</div>
+    <div id="items-container"></div>
+    <button onclick="addLineItem()" style="background:#eff6ff;border:1.5px dashed #bfdbfe;color:#3b82f6;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;font-family:inherit">+ Add Line Item</button>
+    <div style="margin-bottom:14px"><label class="label">Notes</label><input id="f-notes" class="input" placeholder="Optional notes…"/></div>
+    <!-- Totals preview -->
+    <div id="totals-preview" style="border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;border:1.5px solid #bbf7d0;background:#f0fdf4"></div>
+    <!-- Approval section -->
+    <div id="approval-section" class="hidden" style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:800;color:#92400e;margin-bottom:12px">🔐 Approval Details Required</div>
+      <label class="label" style="color:#92400e">Send for Approval To *</label>
+      <select id="f-approver" class="input" style="margin-bottom:12px"></select>
+      <label class="label" style="color:#92400e">Business Justification *</label>
+      <input id="f-justification" class="input" placeholder="e.g. Equipment for Q3 content production" oninput="updateTotalsPreview()"/>
+      <div id="justification-error" class="hidden" style="font-size:11px;color:#dc2626;margin-top:4px">Required for expenses above S$500</div>
+    </div>
+    <div class="flex">
+      <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" id="submit-btn" onclick="submitReceipt()" style="flex:2" id="submit-btn">Save Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal">
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let expenses = [];
+let currentUser = "";
+let currentView = "dashboard";
+let expandedMonths = {};
+let refreshInterval = null;
+
+// ── Helpers ──
+const fmtSGD = v => `S$${Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",")}`;
+const getMonth = d => { const x=new Date(d); return `${MONTHS[x.getMonth()]} ${x.getFullYear()}`; };
+const nowStr = () => new Date().toLocaleString("en-SG",{dateStyle:"medium",timeStyle:"short"});
+const calcTotals = items => {
+  const sub = items.reduce((s,i)=>s+(parseFloat(i.unitPrice)||0)*(parseInt(i.qty)||0),0);
+  return { subtotal:+sub.toFixed(2), gst:+(sub*0.09).toFixed(2), total:+(sub*1.09).toFixed(2) };
+};
+
+// ── Name gate ──
+function enterApp() {
+  const name = document.getElementById("name-input").value.trim();
+  if (!name) return;
+  currentUser = name;
+  document.getElementById("user-label").textContent = name;
+  document.getElementById("submitter-label").textContent = name;
+  document.getElementById("name-gate").style.display = "none";
+  initSelects();
+  if (SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    document.getElementById("config-warning").classList.remove("hidden");
+    document.getElementById("loading-state").classList.add("hidden");
+    document.getElementById("summary-cards").classList.remove("hidden");
+    expenses = [];
+    renderAll();
+  } else {
+    loadExpenses();
+    refreshInterval = setInterval(loadExpenses, 20000);
+  }
+}
+
+function initSelects() {
+  const cat = document.getElementById("f-category");
+  CATEGORIES.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; cat.appendChild(o); });
+  const pay = document.getElementById("f-payment");
+  PAYMENT_METHODS.forEach(p => { const o=document.createElement("option"); o.value=p; o.textContent=p; pay.appendChild(o); });
+  const apr = document.getElementById("f-approver");
+  APPROVERS.forEach(a => { const o=document.createElement("option"); o.value=a; o.textContent=a; apr.appendChild(o); });
+}
+
+// ── API ──
+function setSyncStatus(msg, color) {
+  const el = document.getElementById("sync-status");
+  el.textContent = msg;
+  el.style.color = color;
+}
+
+async function loadExpenses() {
+  setSyncStatus("⏳ Loading…", "#f59e0b");
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=get`);
+    const data = await res.json();
+    if (data.expenses) {
+      expenses = data.expenses;
+      renderAll();
+      setSyncStatus("✓ Live", "#34d399");
+      document.getElementById("loading-state").classList.add("hidden");
+      document.getElementById("summary-cards").classList.remove("hidden");
+    }
+  } catch(e) {
+    setSyncStatus("⚠ Offline", "#ef4444");
+    document.getElementById("loading-state").innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;font-size:14px">⚠️ Could not connect to database. Check your Apps Script URL.</div>';
+  }
+}
+
+async function apiCall(params) {
+  setSyncStatus("💾 Saving…", "#f59e0b");
+  const url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  const data = await res.json();
+  await loadExpenses();
+  return data;
+}
+
+// ── Filters ──
+function getFiltered() {
+  const month = document.getElementById("filter-month")?.value || "All";
+  const cat = document.getElementById("filter-cat")?.value || "All";
+  return expenses.filter(e =>
+    (month === "All" || getMonth(e.date) === month) &&
+    (cat === "All" || e.category === cat)
+  );
+}
+function clearFilters() {
+  document.getElementById("filter-month").value = "All";
+  document.getElementById("filter-cat").value = "All";
+  document.getElementById("clear-filters").classList.add("hidden");
+  renderAll();
+}
+
+// ── Render All ──
+function renderAll() {
+  updateFilterOptions();
+  const filtered = getFiltered();
+  renderSummaryCards(filtered);
+  renderAlerts(filtered);
+  renderDashboard(filtered);
+  renderList(filtered);
+  renderApprovals();
+  updateNavBadge();
+  const month = document.getElementById("filter-month")?.value || "All";
+  const cat = document.getElementById("filter-cat")?.value || "All";
+  document.getElementById("clear-filters").classList.toggle("hidden", month === "All" && cat === "All");
+}
+
+function updateFilterOptions() {
+  const monthSel = document.getElementById("filter-month");
+  const catSel = document.getElementById("filter-cat");
+  const curMonth = monthSel.value;
+  const curCat = catSel.value;
+
+  const months = ["All", ...[...new Set(expenses.map(e=>getMonth(e.date)))].sort((a,b)=>new Date(a)-new Date(b))];
+  const cats = ["All", ...[...new Set(expenses.map(e=>e.category))]];
+
+  monthSel.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join("");
+  catSel.innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join("");
+  if (months.includes(curMonth)) monthSel.value = curMonth;
+  if (cats.includes(curCat)) catSel.value = curCat;
+}
+
+function updateNavBadge() {
+  const count = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
+  const badge = document.getElementById("pending-badge");
+  if (count > 0) { badge.textContent = count; badge.classList.remove("hidden"); }
+  else badge.classList.add("hidden");
+}
+
+// ── Summary Cards ──
+function renderSummaryCards(filtered) {
+  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
+  const totalGST = filtered.reduce((s,e)=>s+e.gst,0);
+  const totalSavings = filtered.reduce((s,e)=>s+e.items.reduce((is,i)=>is+((i.originalPrice-i.unitPrice)*i.qty),0),0);
+  const pending = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
+  const cards = [
+    {label:"Total Spend",value:fmtSGD(totalSpend),sub:`${filtered.length} receipt(s)`,accent:"#3b82f6"},
+    {label:"Excl. GST",value:fmtSGD(totalSpend-totalGST),sub:"Net expenditure",accent:"#8b5cf6"},
+    {label:"GST Paid",value:fmtSGD(totalGST),sub:"Reclaimable if GST-reg.",accent:"#f59e0b"},
+    {label:"Total Savings",value:fmtSGD(totalSavings),sub:"Discounts captured",accent:"#10b981"},
+    ...(pending>0?[{label:"Pending Approval",value:`${pending}`,sub:"Awaiting sign-off",accent:"#ef4444"}]:[]),
+  ];
+  document.getElementById("summary-cards").innerHTML = cards.map(c=>`
+    <div class="summary-card" style="background:linear-gradient(135deg,${c.accent}15,${c.accent}05);border-color:${c.accent}30">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">${c.label}</div>
+      <div style="font-size:24px;font-weight:800;color:${c.accent}">${c.value}</div>
+      ${c.sub?`<div style="font-size:12px;color:#94a3b8;margin-top:4px">${c.sub}</div>`:""}
+    </div>`).join("");
+}
+
+// ── Alerts ──
+function renderAlerts(filtered) {
+  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
+  const totalGST = filtered.reduce((s,e)=>s+e.gst,0);
+  const totalSavings = filtered.reduce((s,e)=>s+e.items.reduce((is,i)=>is+((i.originalPrice-i.unitPrice)*i.qty),0),0);
+  const pending = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
+  const alerts = [];
+  if(pending>0) alerts.push({type:"red",icon:"🚨",msg:`${pending} receipt(s) above S$${APPROVAL_THRESHOLD} awaiting approval. Review in the Approvals tab.`});
+  if(totalSpend>0&&totalGST/totalSpend>0.08) alerts.push({type:"blue",icon:"ℹ️",msg:`GST: ${fmtSGD(totalGST)} (${((totalGST/totalSpend)*100).toFixed(1)}%) — verify GST-registered vendors for input tax claims.`});
+  filtered.forEach(e=>{if(e.total>1000)alerts.push({type:"red",icon:"🚨",msg:`High-value: ${e.vendor} — ${fmtSGD(e.total)} on ${e.date}. Status: ${(e.approvalStatus||"").toUpperCase()}.`});});
+  if(totalSavings>0) alerts.push({type:"green",icon:"💰",msg:`Discounts captured: ${fmtSGD(totalSavings)}. Good purchasing behaviour.`});
+  const sec = document.getElementById("alerts-section");
+  if(alerts.length===0){sec.classList.add("hidden");return;}
+  sec.classList.remove("hidden");
+  document.getElementById("alerts-list").innerHTML = alerts.map(a=>`
+    <div class="alert-box alert-${a.type}"><span>${a.icon}</span><span>${a.msg}</span></div>`).join("");
+}
+
+// ── Dashboard ──
+function renderDashboard(filtered) {
+  const byMonth = {};
+  expenses.forEach(e=>{
+    const m=getMonth(e.date);
+    if(!byMonth[m])byMonth[m]={total:0,count:0,items:[]};
+    byMonth[m].total+=e.total;byMonth[m].count++;byMonth[m].items.push(e);
+  });
+  const monthEntries = Object.entries(byMonth).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+  const maxTotal = Math.max(...monthEntries.map(([,d])=>d.total),1);
+
+  const byCategory = {};
+  filtered.forEach(e=>{if(!byCategory[e.category])byCategory[e.category]=0;byCategory[e.category]+=e.total;});
+  const catEntries = Object.entries(byCategory).sort((a,b)=>b[1]-a[1]);
+  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
+
+  document.getElementById("view-dashboard").innerHTML = `
+    <div class="card">
+      <div style="font-size:15px;font-weight:800;margin-bottom:18px">📅 Monthly Breakdown</div>
+      ${monthEntries.length===0?'<div style="color:#94a3b8;font-size:14px">No data yet.</div>':monthEntries.map(([month,data])=>`
+        <div style="margin-bottom:12px">
+          <div class="month-row" onclick="toggleMonth('${month}')">
+            <div style="width:80px;font-size:13px;font-weight:700">${month}</div>
+            <div class="bar-container"><div class="bar-fill bar-blue" style="width:${(data.total/maxTotal*100).toFixed(1)}%"></div></div>
+            <div style="width:90px;text-align:right;font-size:14px;font-weight:800">${fmtSGD(data.total)}</div>
+            <div style="width:60px;text-align:right;font-size:12px;color:#64748b">${data.count} rcpt</div>
+            <div style="font-size:12px;color:#94a3b8" id="arrow-${month.replace(/ /g,'_')}">${expandedMonths[month]?"▲":"▼"}</div>
+          </div>
+          <div id="month-children-${month.replace(/ /g,'_')}" class="${expandedMonths[month]?"month-children":"hidden"}">
+            ${data.items.map(e=>`
+              <div class="month-exp-row" onclick="openDetail('${e.id}')">
+                <div>
+                  <div style="font-size:13px;font-weight:600">${e.vendor}</div>
+                  <div style="font-size:11px;color:#94a3b8">${e.date} · ${e.category}${e.submittedBy?` · by ${e.submittedBy}`:""}</div>
+                  ${e.requiresApproval?`<div style="margin-top:3px">${approvalBadgeHTML(e.approvalStatus)}</div>`:""}
+                </div>
+                <div style="font-size:14px;font-weight:700;color:#3b82f6">${fmtSGD(e.total)}</div>
+              </div>`).join("")}
+          </div>
+        </div>`).join("")}
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:800;margin-bottom:18px">🏷️ By Category</div>
+      ${catEntries.length===0?'<div style="color:#94a3b8;font-size:14px">No data.</div>':catEntries.map(([cat,amt])=>{
+        const pct=totalSpend>0?(amt/totalSpend*100).toFixed(1):0;
+        return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:170px;font-size:13px;font-weight:600;color:#334155">${cat}</div>
+          <div class="bar-container"><div class="bar-fill bar-purple" style="width:${pct}%"></div></div>
+          <div style="width:80px;text-align:right;font-size:13px;font-weight:700">${fmtSGD(amt)}</div>
+          <div style="width:40px;text-align:right;font-size:12px;color:#94a3b8">${pct}%</div>
+        </div>`;}).join("")}
+    </div>`;
+}
+
+function toggleMonth(month) {
+  expandedMonths[month] = !expandedMonths[month];
+  const key = month.replace(/ /g,'_');
+  document.getElementById(`month-children-${key}`).classList.toggle("hidden",!expandedMonths[month]);
+  document.getElementById(`arrow-${key}`).textContent = expandedMonths[month]?"▲":"▼";
+}
+
+// ── List ──
+function renderList(filtered) {
+  const sorted = [...filtered].reverse();
+  document.getElementById("view-list").innerHTML = `
+    <div class="card">
+      <div style="font-size:15px;font-weight:800;margin-bottom:18px">📋 All Receipts (${sorted.length})</div>
+      ${sorted.length===0?'<div style="color:#94a3b8">No receipts match the current filter.</div>':sorted.map(e=>`
+        <div class="receipt-row" onclick="openDetail('${e.id}')">
+          <div class="receipt-icon" style="background:${e.requiresApproval&&e.approvalStatus==='pending'?'#fff7ed':'#eff6ff'}">
+            ${e.requiresApproval&&e.approvalStatus==='pending'?'⏳':'🧾'}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">${e.vendor}</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">${e.date} · #${e.receiptNo||"—"}${e.submittedBy?` · ${e.submittedBy}`:""}</div>
+            <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap">
+              <span class="badge badge-blue">${e.category}</span>
+              ${e.requiresApproval?approvalBadgeHTML(e.approvalStatus):""}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:800">${fmtSGD(e.total)}</div>
+            <div style="font-size:11px;color:#94a3b8">${e.paymentMethod}</div>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// ── Approvals ──
+function renderApprovals() {
+  const policyBox = `<div style="background:linear-gradient(135deg,#1e3a5f,#0f172a);border-radius:14px;padding:18px 22px;margin-bottom:20px;color:#e2e8f0;display:flex;gap:14px;align-items:flex-start">
+    <span style="font-size:24px">🔐</span>
+    <div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:4px">Approval Policy</div>
+      <div style="font-size:13px;color:#94a3b8;line-height:1.6">All expenses exceeding <strong style="color:#fbbf24">S$${APPROVAL_THRESHOLD}</strong> require documented approval before reimbursement or posting.</div>
+    </div>
+  </div>`;
+
+  const groups = {
+    pending: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending"),
+    approved: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="approved"),
+    rejected: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="rejected"),
+  };
+  const config = {
+    pending:{bg:"#fff7ed",border:"#fed7aa",txt:"#9a3412",label:"⏳ Pending Approval"},
+    approved:{bg:"#f0fdf4",border:"#bbf7d0",txt:"#065f46",label:"✓ Approved"},
+    rejected:{bg:"#fff1f2",border:"#fecdd3",txt:"#991b1b",label:"✗ Rejected"},
+  };
+
+  let html = policyBox;
+  ["pending","approved","rejected"].forEach(status=>{
+    const group = groups[status];
+    if(!group.length) return;
+    const c = config[status];
+    html += `<div class="card"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:${c.txt}">${c.label} (${group.length})</div>
+      ${group.map(e=>`
+        <div class="approval-card" style="background:${c.bg};border-color:${c.border}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-size:14px;font-weight:700">${e.vendor}</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px">${e.date} · ${e.category} · #${e.receiptNo||"—"}</div>
+              ${e.submittedBy?`<div style="font-size:12px;color:#64748b">Submitted by: <strong>${e.submittedBy}</strong>${e.submittedAt?` · ${e.submittedAt}`:""}</div>`:""}
+              ${e.justification?`<div style="font-size:12px;color:#475569;margin-top:6px;background:rgba(255,255,255,0.6);border-radius:6px;padding:6px 10px">📝 <em>"${e.justification}"</em></div>`:""}
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:17px;font-weight:800;color:${c.txt}">${fmtSGD(e.total)}</div>
+              ${status==="pending"?`<button class="btn" style="margin-top:8px;padding:6px 14px;font-size:12px;background:#0f172a;color:#fff" onclick="openDetail('${e.id}')">Review →</button>`:""}
+            </div>
+          </div>
+          ${e.approvalHistory?.length?`<div style="margin-top:10px;border-top:1px solid rgba(0,0,0,0.06);padding-top:10px">
+            ${e.approvalHistory.map(h=>`<div class="history-entry"><strong>${h.action==="approve"?"✓ Approved":h.action==="reject"?"✗ Rejected":"📤 Submitted"}</strong> by ${h.by} · ${h.at}${h.note?` — "${h.note}"`:""}</div>`).join("")}
+          </div>`:""}
+        </div>`).join("")}
+    </div>`;
+  });
+  if(!expenses.filter(e=>e.requiresApproval).length) html += '<div style="text-align:center;padding:60px;color:#94a3b8;font-size:14px">No expenses requiring approval yet.</div>';
+  document.getElementById("view-approvals").innerHTML = html;
+}
+
+// ── Detail Modal ──
+function openDetail(id) {
+  const e = expenses.find(x=>x.id==id);
+  if(!e) return;
+  const needsApproval = e.requiresApproval && e.approvalStatus === "pending";
+  document.getElementById("detail-content").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+      <div>
+        <div style="font-size:18px;font-weight:800">${e.vendor}</div>
+        <div style="font-size:13px;color:#64748b;margin-top:2px">${e.date} · Receipt #${e.receiptNo||"—"}</div>
+        ${e.submittedBy?`<div style="font-size:12px;color:#94a3b8;margin-top:2px">Submitted by ${e.submittedBy}${e.submittedAt?` · ${e.submittedAt}`:""}</div>`:""}
+      </div>
+      <button class="btn btn-ghost" onclick="closeDetailModal()" style="padding:6px 12px;font-size:16px">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="badge badge-blue">${e.category}</span>
+      <span class="badge badge-gray">${e.paymentMethod}</span>
+      ${e.requiresApproval?approvalBadgeHTML(e.approvalStatus):""}
+    </div>
+
+    ${needsApproval?`
+    <div class="approval-banner" style="background:#fff7ed;border:1.5px solid #fed7aa">
+      <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">⏳ Approval Required</div>
+      <div style="font-size:12px;color:#78350f">This expense exceeds S$${APPROVAL_THRESHOLD} and requires sign-off.</div>
+      ${e.justification?`<div style="font-size:12px;color:#92400e;margin-top:8px;font-style:italic">"${e.justification}"</div>`:""}
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-green" style="flex:1" onclick="showApprovalForm('${e.id}','approve')">✓ Approve</button>
+        <button class="btn btn-red" style="flex:1" onclick="showApprovalForm('${e.id}','reject')">✗ Reject</button>
+      </div>
+      <div id="approval-form" class="hidden" style="margin-top:14px;background:#fff;border-radius:10px;padding:14px;border:1px solid #e2e8f0">
+        <div id="approval-form-title" style="font-size:13px;font-weight:700;margin-bottom:10px"></div>
+        <label class="label">Approver</label>
+        <select id="d-approver" class="input" style="margin-bottom:10px">${APPROVERS.map(a=>`<option>${a}</option>`).join("")}</select>
+        <label class="label">Remarks (optional)</label>
+        <input id="d-note" class="input" placeholder="Add a note…" style="margin-bottom:12px"/>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="hideApprovalForm()" style="flex:1">Back</button>
+          <button class="btn" id="d-confirm-btn" style="flex:2;color:#fff" onclick="confirmApproval('${e.id}')"></button>
+        </div>
+      </div>
+    </div>`:""}
+
+    ${e.requiresApproval&&e.approvalStatus!=="pending"?`
+    <div class="approval-banner" style="background:${e.approvalStatus==="approved"?"#f0fdf4":"#fff1f2"};border:1.5px solid ${e.approvalStatus==="approved"?"#bbf7d0":"#fecdd3"}">
+      ${(e.approvalHistory||[]).filter(h=>h.action!=="submitted").map(h=>`
+        <div style="font-size:13px;color:${e.approvalStatus==="approved"?"#065f46":"#991b1b"}">
+          <strong>${e.approvalStatus==="approved"?"✓ Approved":"✗ Rejected"}</strong> by ${h.by} · ${h.at}
+          ${h.note?`<div style="font-size:12px;margin-top:2px;font-style:italic">"${h.note}"</div>`:""}
+        </div>`).join("")}
+    </div>`:""}
+
+    <div style="background:#f8fafc;border-radius:10px;overflow:hidden;margin-bottom:16px">
+      <table>
+        <thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit</th><th style="text-align:right">Amount</th></tr></thead>
+        <tbody>
+          ${e.items.map(item=>`<tr>
+            <td>${item.name}${item.discount&&item.discount!=="0%"?`<div style="font-size:11px;color:#10b981;margin-top:2px">✓ ${item.discount} off — saved ${fmtSGD((item.originalPrice-item.unitPrice)*item.qty)}</div>`:""}</td>
+            <td style="text-align:center;color:#64748b">${item.qty}</td>
+            <td style="text-align:right;color:#64748b">${fmtSGD(item.unitPrice)}</td>
+            <td style="text-align:right;font-weight:700">${fmtSGD(item.unitPrice*item.qty)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div style="border-top:2px solid #e2e8f0;padding-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#64748b;margin-bottom:6px"><span>Subtotal (excl. GST)</span><span>${fmtSGD(e.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#f59e0b;margin-bottom:10px"><span>GST 9%</span><span>${fmtSGD(e.gst)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:800"><span>Total</span><span style="color:#3b82f6">${fmtSGD(e.total)}</span></div>
+    </div>
+    ${e.notes?`<div style="margin-top:14px;padding:10px 14px;background:#fffbeb;border-radius:8px;font-size:13px;color:#92400e">📝 ${e.notes}</div>`:""}
+    <button onclick="deleteExpense('${e.id}','${e.vendor.replace(/'/g,"\\'")}',${e.total})" style="margin-top:20px;width:100%;padding:10px;border-radius:10px;border:1.5px solid #fecdd3;background:#fff1f2;color:#be123c;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">🗑 Delete this receipt</button>
+  `;
+  document.getElementById("detail-modal").classList.remove("hidden");
+}
+
+function closeDetailModal() { document.getElementById("detail-modal").classList.add("hidden"); }
+
+let currentApprovalAction = null;
+function showApprovalForm(id, action) {
+  currentApprovalAction = action;
+  const form = document.getElementById("approval-form");
+  const title = document.getElementById("approval-form-title");
+  const btn = document.getElementById("d-confirm-btn");
+  title.textContent = action==="approve"?"✓ Confirm Approval":"✗ Confirm Rejection";
+  title.style.color = action==="approve"?"#065f46":"#991b1b";
+  btn.textContent = `Confirm ${action==="approve"?"Approval":"Rejection"}`;
+  btn.style.background = action==="approve"?"#10b981":"#ef4444";
+  form.classList.remove("hidden");
+}
+function hideApprovalForm() { document.getElementById("approval-form").classList.add("hidden"); }
+
+async function confirmApproval(id) {
+  const approver = document.getElementById("d-approver").value;
+  const note = document.getElementById("d-note").value;
+  await apiCall({ action:"approve", id, status:currentApprovalAction==="approve"?"approved":"rejected", approver, note });
+  closeDetailModal();
+}
+
+async function deleteExpense(id, vendor, total) {
+  if (!confirm(`Delete "${vendor}" (${fmtSGD(total)})? This cannot be undone.`)) return;
+  await apiCall({ action:"delete", id });
+  closeDetailModal();
+}
+
+// ── Badge HTML ──
+function approvalBadgeHTML(status) {
+  if(status==="approved") return '<span class="badge badge-green">✓ Approved</span>';
+  if(status==="rejected") return '<span class="badge badge-red">✗ Rejected</span>';
+  if(status==="not_required") return '<span class="badge badge-gray">No Approval Needed</span>';
+  return '<span class="badge badge-amber">⏳ Pending Approval</span>';
+}
+
+// ── Views ──
+function setView(v) {
+  currentView = v;
+  ["dashboard","list","approvals"].forEach(n=>{
+    document.getElementById(`view-${n}`).classList.toggle("hidden",n!==v);
+    document.getElementById(`nav-${n}`).className = `nav-btn ${n===v?"active":"inactive"}`;
+  });
+}
+
+// ── Add Receipt Form ──
+let lineItems = [{name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}];
+
+function openAddModal() {
+  lineItems = [{name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}];
+  document.getElementById("f-date").value="";
+  document.getElementById("f-receipt").value="";
+  document.getElementById("f-vendor").value="";
+  document.getElementById("f-notes").value="";
+  document.getElementById("f-justification").value="";
+  document.getElementById("f-category").selectedIndex=0;
+  document.getElementById("f-payment").selectedIndex=0;
+  renderLineItems();
+  updateTotalsPreview();
+  document.getElementById("add-modal").classList.remove("hidden");
+}
+function closeAddModal() { document.getElementById("add-modal").classList.add("hidden"); }
+
+function renderLineItems() {
+  document.getElementById("items-container").innerHTML = lineItems.map((item,i)=>`
+    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid #e2e8f0">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1"><label class="label">Item Name</label><input class="input" value="${item.name}" oninput="lineItems[${i}].name=this.value" placeholder="Description"/></div>
+        <div style="width:60px"><label class="label">Qty</label><input type="number" min="1" class="input" value="${item.qty}" oninput="lineItems[${i}].qty=this.value;updateTotalsPreview()"/></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1"><label class="label">Unit Price (after disc.)</label><input type="number" step="0.01" class="input" value="${item.unitPrice}" oninput="lineItems[${i}].unitPrice=this.value;updateTotalsPreview()"/></div>
+        <div style="flex:1"><label class="label">Original Price</label><input type="number" step="0.01" class="input" value="${item.originalPrice}" oninput="lineItems[${i}].originalPrice=this.value"/></div>
+        <div style="width:80px"><label class="label">Discount</label><input class="input" value="${item.discount}" oninput="lineItems[${i}].discount=this.value" placeholder="0%"/></div>
+      </div>
+      ${lineItems.length>1?`<button onclick="removeLineItem(${i})" style="margin-top:8px;background:none;border:none;color:#ef4444;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit">✕ Remove</button>`:""}
+    </div>`).join("");
+}
+function addLineItem() { lineItems.push({name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}); renderLineItems(); updateTotalsPreview(); }
+function removeLineItem(i) { lineItems.splice(i,1); renderLineItems(); updateTotalsPreview(); }
+
+function updateTotalsPreview() {
+  const {subtotal,gst,total} = calcTotals(lineItems);
+  const needs = total > APPROVAL_THRESHOLD;
+  const justification = document.getElementById("f-justification")?.value.trim()||"";
+  const preview = document.getElementById("totals-preview");
+  preview.style.background = needs?"#fff7ed":"#f0fdf4";
+  preview.style.borderColor = needs?"#fed7aa":"#bbf7d0";
+  preview.innerHTML = `
+    <div style="display:flex;justify-content:space-between;color:#64748b"><span>Subtotal</span><span>${fmtSGD(subtotal)}</span></div>
+    <div style="display:flex;justify-content:space-between;color:#f59e0b"><span>GST 9%</span><span>${fmtSGD(gst)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:6px"><span>Total</span><span style="color:${needs?"#c2410c":"#10b981"}">${fmtSGD(total)}</span></div>
+    ${needs?`<div style="margin-top:8px;font-size:12px;color:#92400e;font-weight:600">⚠️ Exceeds S$${APPROVAL_THRESHOLD} — approval required before processing.</div>`:""}`;
+  document.getElementById("approval-section").classList.toggle("hidden",!needs);
+  const btn = document.getElementById("submit-btn");
+  const disabled = needs && !justification;
+  btn.disabled = disabled;
+  btn.style.background = disabled?"#cbd5e1":"linear-gradient(135deg,#3b82f6,#6366f1)";
+  btn.textContent = needs?"Submit for Approval":"Save Receipt";
+}
+
+async function submitReceipt() {
+  const date = document.getElementById("f-date").value;
+  const vendor = document.getElementById("f-vendor").value.trim();
+  if(!date||!vendor) { alert("Please fill in Date and Vendor."); return; }
+  const justification = document.getElementById("f-justification").value.trim();
+  const {subtotal,gst,total} = calcTotals(lineItems);
+  if(total>APPROVAL_THRESHOLD&&!justification) return;
+  const btn = document.getElementById("submit-btn");
+  btn.textContent = "💾 Saving…"; btn.disabled = true;
+  const data = {
+    date, vendor,
+    category: document.getElementById("f-category").value,
+    receiptNo: document.getElementById("f-receipt").value,
+    paymentMethod: document.getElementById("f-payment").value,
+    notes: document.getElementById("f-notes").value,
+    submittedBy: currentUser,
+    submittedAt: nowStr(),
+    items: lineItems.map(i=>({...i,unitPrice:parseFloat(i.unitPrice)||0,originalPrice:parseFloat(i.originalPrice)||parseFloat(i.unitPrice)||0,qty:parseInt(i.qty)||1})),
+    subtotal, gst, total,
+    justification,
+    requestedApprover: document.getElementById("f-approver")?.value||"",
+  };
+  await apiCall({ action:"add", data:JSON.stringify(data) });
+  closeAddModal();
+}
+</script>
+</body>
+</html>
