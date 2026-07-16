@@ -1,729 +1,934 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Expense Tracker</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f8;color:#0f172a;min-height:100vh}
-  input,select,textarea{font-family:inherit}
-  .input{width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;background:#f8fafc}
-  .input:focus{border-color:#3b82f6;background:#fff}
-  .label{font-size:12px;font-weight:700;color:#475569;display:block;margin-bottom:4px}
-  .btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;transition:opacity 0.15s}
-  .btn:hover{opacity:0.88}
-  .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff}
-  .btn-green{background:#10b981;color:#fff}
-  .btn-red{background:#ef4444;color:#fff}
-  .btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0}
-  .badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block}
-  .badge-blue{background:#dbeafe;color:#1e40af}
-  .badge-green{background:#d1fae5;color:#065f46}
-  .badge-red{background:#fee2e2;color:#991b1b}
-  .badge-amber{background:#fef3c7;color:#92400e}
-  .badge-gray{background:#f3f4f6;color:#374151}
-  .badge-purple{background:#ede9fe;color:#5b21b6}
-  .card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:20px}
-  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
-  .modal{background:#fff;border-radius:16px;max-width:660px;width:100%;max-height:92vh;overflow-y:auto;padding:32px;box-shadow:0 24px 60px rgba(0,0,0,0.2)}
-  .hidden{display:none!important}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .span2{grid-column:1/-1}
-  .flex{display:flex;gap:10px;align-items:center}
-  .flex-between{display:flex;justify-content:space-between;align-items:center}
-  .summary-cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
-  .summary-card{flex:1;min-width:140px;border-radius:14px;padding:20px 22px;border:1.5px solid transparent}
-  .alert-box{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;display:flex;gap:10px;margin-bottom:8px}
-  .alert-red{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}
-  .alert-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
-  .alert-green{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
-  .receipt-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #f1f5f9;cursor:pointer}
-  .receipt-row:hover{background:#fafbfc}
-  .receipt-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{padding:10px 14px;text-align:left;font-weight:700;color:#475569;background:#f1f5f9}
-  td{padding:10px 14px;border-top:1px solid #e2e8f0}
-  .approval-banner{border-radius:12px;padding:14px 18px;margin-bottom:18px}
-  .spinner{display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.7s linear infinite;margin-right:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  #name-gate{position:fixed;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a5f);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px}
-  .name-card{background:#fff;border-radius:20px;padding:40px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.3)}
-  #header{background:linear-gradient(135deg,#0f172a,#1e3a5f);position:sticky;top:0;z-index:100}
-  #header-inner{max-width:980px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-  #filter-bar{background:rgba(255,255,255,0.05);border-top:1px solid rgba(255,255,255,0.08)}
-  #filter-inner{max-width:980px;margin:0 auto;padding:8px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .filter-select{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;border-radius:6px;padding:4px 10px;font-size:12px;outline:none}
-  .filter-select option{background:#1e3a5f}
-  .nav-btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;position:relative;font-family:inherit}
-  .nav-btn.active{background:#3b82f6;color:#fff}
-  .nav-btn.inactive{background:rgba(255,255,255,0.1);color:#94a3b8}
-  .pending-badge{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:17px;height:17px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
-  #main{max-width:980px;margin:0 auto;padding:24px}
-  .bar-container{flex:1;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:4px}
-  .bar-blue{background:linear-gradient(90deg,#3b82f6,#6366f1)}
-  .bar-purple{background:linear-gradient(90deg,#8b5cf6,#ec4899)}
-  .month-row{display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 0;border-bottom:1px solid #f1f5f9}
-  .month-children{padding-left:16px;padding-top:10px}
-  .month-exp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;cursor:pointer;background:#f8fafc;margin-bottom:6px}
-  .month-exp-row:hover{background:#f1f5f9}
-  .approval-card{border:1.5px solid;border-radius:12px;padding:14px 18px;margin-bottom:12px}
-  .history-entry{font-size:11px;color:#64748b;margin-bottom:4px}
-  .config-banner{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:#92400e}
-  @media(max-width:640px){.grid2{grid-template-columns:1fr}.summary-cards{flex-direction:column}.span2{grid-column:auto}}
+  :root {
+    color-scheme: light;
+  }
+  .viz-root {
+    --surface-1:      #fcfcfb;
+    --page-plane:     #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --success:        #006300;
+
+    --cat-1: #2a78d6; /* Meals & Entertainment */
+    --cat-2: #008300; /* Electronics & Equipment */
+    --cat-3: #e87ba4; /* Groceries & Pantry */
+    --cat-4: #eda100; /* Travel & Transport */
+    --cat-5: #1baf7a; /* Office & Supplies */
+    --cat-6: #eb6834; /* Accommodation */
+    --cat-7: #4a3aa7; /* Client & Marketing */
+    --cat-8: #e34948; /* Other */
+
+    --seq-400: #3987e5;
+    --seq-450: #2a78d6;
+    --seq-500: #256abf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page-plane:     #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --success:        #0ca30c;
+
+      --cat-1: #3987e5;
+      --cat-2: #008300;
+      --cat-3: #d55181;
+      --cat-4: #c98500;
+      --cat-5: #199e70;
+      --cat-6: #d95926;
+      --cat-7: #9085e9;
+      --cat-8: #e66767;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page-plane:     #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --success:        #0ca30c;
+
+    --cat-1: #3987e5;
+    --cat-2: #008300;
+    --cat-3: #d55181;
+    --cat-4: #c98500;
+    --cat-5: #199e70;
+    --cat-6: #d95926;
+    --cat-7: #9085e9;
+    --cat-8: #e66767;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page-plane);
+    color: var(--text-primary);
+  }
+  .viz-root { min-height: 100vh; padding-bottom: 60px; }
+
+  .app-header {
+    padding: 24px 28px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .app-header h1 { font-size: 22px; margin: 0 0 4px; }
+  .app-header p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+  .theme-toggle {
+    border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+    border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+
+  .toolbar {
+    margin: 0 28px 20px; padding: 14px 16px; background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 12px;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .toolbar label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px; }
+  .toolbar select, .toolbar input[type="text"] {
+    padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--page-plane); color: var(--text-primary); font-size: 13px; min-width: 150px;
+  }
+  .toolbar .field { display:flex; flex-direction: column; }
+  .toolbar .spacer { flex: 1; }
+  .btn {
+    border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary);
+    border-radius: 7px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-weight: 500;
+  }
+  .btn:hover { filter: brightness(0.97); }
+  .btn.primary { background: var(--cat-1); color: white; border-color: var(--cat-1); }
+  .btn.danger-text { color: var(--cat-8); border: none; background: none; padding: 4px 8px; font-size: 12px; }
+  #importFile { display: none; }
+
+  .section { margin: 0 28px 28px; }
+  .section-title { font-size: 15px; font-weight: 600; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .stat-tile {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  }
+  .stat-tile .label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-tile .value { font-size: 24px; font-weight: 600; }
+  .stat-tile .sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .stat-tile .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
+
+  .chart-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(2,1fr); } }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-head h3 { font-size: 13px; margin: 0; font-weight: 600; }
+  .table-toggle {
+    font-size: 11px; color: var(--text-secondary); background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px; cursor: pointer;
+  }
+
+  svg { overflow: visible; }
+  svg text { fill: var(--text-secondary); font-size: 11px; font-family: system-ui, -apple-system, sans-serif; }
+  .axis-line { stroke: var(--baseline); stroke-width: 1; }
+  .grid-line { stroke: var(--gridline); stroke-width: 1; }
+  .bar-seg { cursor: pointer; }
+  .bar-label { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 10px; font-size: 12px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .legend-item.muted { opacity: 0.35; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; background: var(--text-primary); color: var(--surface-1);
+    font-size: 12px; padding: 6px 10px; border-radius: 6px; z-index: 50; display: none; max-width: 240px;
+    line-height: 1.4;
+  }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.data-table th, table.data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gridline); }
+  table.data-table th { color: var(--text-muted); font-weight: 500; }
+
+  .month-group { margin-bottom: 18px; }
+  .month-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 14px; background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer; user-select: none;
+  }
+  .month-header .title { font-size: 14px; font-weight: 600; }
+  .month-header .meta { font-size: 12px; color: var(--text-secondary); }
+  .month-header .caret { transition: transform 0.15s; color: var(--text-muted); }
+  .month-header.collapsed .caret { transform: rotate(-90deg); }
+  .month-body { margin-top: 10px; display: grid; gap: 10px; }
+  .month-body.hidden { display: none; }
+
+  .receipt-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+  }
+  .receipt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .receipt-vendor { font-size: 14px; font-weight: 600; }
+  .receipt-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .type-pill {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 9px; border-radius: 999px;
+    background: var(--page-plane); border: 1px solid var(--border); color: var(--text-secondary); margin-top: 6px;
+  }
+  .type-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .receipt-amount { font-size: 18px; font-weight: 700; white-space: nowrap; }
+  .receipt-amount .gst { font-size: 11px; font-weight: 400; color: var(--text-muted); display:block; text-align: right;}
+
+  .items-list { margin: 10px 0; font-size: 12px; color: var(--text-secondary); }
+  .items-list div { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--gridline); }
+  .items-list div:last-child { border-bottom: none; }
+
+  .manual-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .manual-fields .field label { font-size: 10px; color: var(--text-muted); display:block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .manual-fields input, .manual-fields select {
+    width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--page-plane); color: var(--text-primary); font-size: 12px;
+  }
+  .receipt-actions { display: flex; justify-content: flex-end; margin-top: 8px; gap: 6px; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface-1); border-radius: 14px; padding: 22px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+    border: 1px solid var(--border);
+  }
+  .modal h2 { font-size: 16px; margin: 0 0 14px; }
+  .modal .field { margin-bottom: 12px; }
+  .modal label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+  .modal input, .modal select { width: 100%; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary); font-size: 13px; }
+  .modal .item-row { display: grid; grid-template-columns: 2fr 0.6fr 0.8fr auto; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .modal .item-row input { font-size: 12px; padding: 6px 8px; }
+  .modal .remove-item { background: none; border: none; color: var(--cat-8); cursor: pointer; font-size: 16px; padding: 0 4px; }
+  .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 10px; }
+  .modal-total { font-size: 13px; color: var(--text-secondary); }
 </style>
 </head>
 <body>
+<div class="viz-root" id="vizRoot">
 
-<!-- CONFIG — REPLACE WITH YOUR SCRIPT URL AFTER SETUP -->
-<script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUSx2aHxWH9YJKf1k540gZ4ISqdOq1-_KOfU8mu4svam-xuZ7xhprsbPWcHlmB20dL/exec";
-  const APPROVAL_THRESHOLD = 500;
-  const CATEGORIES = ["Electronics & Equipment","Travel & Transport","Meals & Entertainment","Office Supplies","Software & Subscriptions","Marketing","Utilities","Professional Services","Miscellaneous"];
-  const APPROVERS = ["Sarah Tan (CFO)","James Lim (Finance Manager)","Rachel Ng (Director)"];
-  const PAYMENT_METHODS = ["Visa/Master","Cash","AMEX","PayNow","GrabPay","Corporate Card","Other"];
-  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-</script>
-
-<!-- Name Gate -->
-<div id="name-gate">
-  <div class="name-card">
-    <div style="font-size:40px;margin-bottom:16px">🧾</div>
-    <div style="font-size:22px;font-weight:800;margin-bottom:6px;color:#0f172a">Expense Tracker</div>
-    <div style="font-size:13px;color:#64748b;margin-bottom:28px">Shared team expense submission & approval portal.<br/>Enter your name to continue.</div>
-    <label class="label" style="text-align:left">Your Name *</label>
-    <input id="name-input" class="input" placeholder="e.g. John Tan" style="margin-bottom:16px;font-size:16px;padding:12px 14px" onkeydown="if(event.key==='Enter')enterApp()"/>
-    <button class="btn btn-primary" onclick="enterApp()" style="width:100%;padding:13px;font-size:15px">Enter →</button>
-    <div style="margin-top:16px;font-size:11px;color:#94a3b8">All submissions are shared and visible to the Finance Manager in real time.</div>
-  </div>
-</div>
-
-<!-- Header -->
-<div id="header">
-  <div id="header-inner">
+  <div class="app-header">
     <div>
-      <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">Finance Manager · Live</div>
-      <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-0.02em">Expense Tracker</div>
+      <h1>Expense Tracker</h1>
+      <p>Receipts parsed from uploads, grouped by month &middot; edit the manual fields inline &middot; use the dashboard to query by type or month</p>
     </div>
-    <div class="flex" style="flex-wrap:wrap">
-      <div style="font-size:11px;color:#475569;background:rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px">
-        👤 <span id="user-label"></span>
-        <span id="sync-status" style="margin-left:8px"></span>
+    <button class="theme-toggle" id="themeToggle">Toggle dark mode</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="field">
+      <label for="filterMonth">Month</label>
+      <select id="filterMonth"><option value="all">All months</option></select>
+    </div>
+    <div class="field">
+      <label for="filterType">Expense type</label>
+      <select id="filterType"><option value="all">All types</option></select>
+    </div>
+    <div class="field">
+      <label for="searchBox">Search</label>
+      <input type="text" id="searchBox" placeholder="Vendor, item, purpose...">
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="clearFilters">Clear filters</button>
+    <button class="btn" id="exportBtn">Export JSON</button>
+    <button class="btn" id="importBtn">Import JSON</button>
+    <input type="file" id="importFile" accept="application/json">
+    <button class="btn primary" id="addReceiptBtn">+ Add receipt</button>
+  </div>
+
+  <div class="section">
+    <div class="stat-row" id="statRow"></div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-head">
+          <h3>Spend by month, by expense type</h3>
+          <button class="table-toggle" data-target="monthChart">Table view</button>
+        </div>
+        <div id="monthChartWrap"><svg id="monthChart" width="100%" height="260"></svg></div>
+        <div class="legend" id="monthLegend"></div>
+        <div id="monthChartTable" style="display:none;"></div>
       </div>
-      <button class="nav-btn active" id="nav-dashboard" onclick="setView('dashboard')">📊 Dashboard</button>
-      <button class="nav-btn inactive" id="nav-list" onclick="setView('list')">📋 Receipts</button>
-      <button class="nav-btn inactive" id="nav-approvals" onclick="setView('approvals')">
-        🔐 Approvals<span id="pending-badge" class="pending-badge hidden"></span>
-      </button>
-      <button class="btn btn-green" onclick="openAddModal()" style="padding:7px 16px;font-size:12px">+ Add Receipt</button>
-    </div>
-  </div>
-  <div id="filter-bar">
-    <div id="filter-inner">
-      <span style="color:#64748b;font-size:12px;font-weight:600">Filter:</span>
-      <select id="filter-month" class="filter-select" onchange="renderAll()"><option value="All">All Months</option></select>
-      <select id="filter-cat" class="filter-select" onchange="renderAll()"><option value="All">All Categories</option></select>
-      <button onclick="clearFilters()" id="clear-filters" class="hidden" style="background:none;border:1px solid rgba(255,255,255,0.2);color:#94a3b8;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">✕ Clear</button>
-      <button onclick="loadExpenses()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.15);color:#64748b;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">↻ Refresh</button>
-    </div>
-  </div>
-</div>
-
-<!-- Main -->
-<div id="main">
-  <!-- Config warning -->
-  <div id="config-warning" class="config-banner hidden">
-    ⚠️ <strong>Setup required:</strong> Replace <code>YOUR_APPS_SCRIPT_URL_HERE</code> in this file with your Apps Script Web App URL. See the setup instructions document.
-  </div>
-
-  <!-- Loading -->
-  <div id="loading-state" style="text-align:center;padding:60px;color:#64748b">
-    <div class="spinner" style="width:32px;height:32px;margin:0 auto 16px"></div>
-    <div style="font-size:15px;font-weight:600">Loading shared expenses…</div>
-  </div>
-
-  <!-- Summary Cards -->
-  <div class="summary-cards hidden" id="summary-cards"></div>
-
-  <!-- Alerts -->
-  <div id="alerts-section" class="hidden" style="margin-bottom:24px">
-    <div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em">⚡ Insights & Alerts</div>
-    <div id="alerts-list"></div>
-  </div>
-
-  <!-- Views -->
-  <div id="view-dashboard"></div>
-  <div id="view-list" class="hidden"></div>
-  <div id="view-approvals" class="hidden"></div>
-</div>
-
-<!-- Add Receipt Modal -->
-<div id="add-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeAddModal()">
-  <div class="modal">
-    <div class="flex-between" style="margin-bottom:22px">
-      <div>
-        <div style="font-size:18px;font-weight:800">Add New Receipt</div>
-        <div style="font-size:12px;color:#94a3b8;margin-top:2px">Submitting as <strong id="submitter-label" style="color:#3b82f6"></strong></div>
-      </div>
-      <button class="btn btn-ghost" onclick="closeAddModal()" style="padding:6px 12px;font-size:16px">✕</button>
-    </div>
-    <div class="grid2" style="margin-bottom:14px">
-      <div><label class="label">Date *</label><input type="date" id="f-date" class="input"/></div>
-      <div><label class="label">Receipt No.</label><input id="f-receipt" class="input" placeholder="e.g. R003655"/></div>
-      <div class="span2"><label class="label">Vendor / Merchant *</label><input id="f-vendor" class="input" placeholder="e.g. Grab · Singapore"/></div>
-      <div>
-        <label class="label">Category</label>
-        <select id="f-category" class="input"></select>
-      </div>
-      <div>
-        <label class="label">Payment Method</label>
-        <select id="f-payment" class="input"></select>
+      <div class="card">
+        <div class="card-head">
+          <h3>Total by expense type</h3>
+          <button class="table-toggle" data-target="typeChart">Table view</button>
+        </div>
+        <div id="typeChartWrap"><svg id="typeChart" width="100%" height="260"></svg></div>
+        <div id="typeChartTable" style="display:none;"></div>
       </div>
     </div>
-    <div style="font-size:13px;font-weight:700;color:#475569;margin-bottom:10px">Line Items</div>
-    <div id="items-container"></div>
-    <button onclick="addLineItem()" style="background:#eff6ff;border:1.5px dashed #bfdbfe;color:#3b82f6;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;font-family:inherit">+ Add Line Item</button>
-    <div style="margin-bottom:14px"><label class="label">Notes</label><input id="f-notes" class="input" placeholder="Optional notes…"/></div>
-    <!-- Totals preview -->
-    <div id="totals-preview" style="border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;border:1.5px solid #bbf7d0;background:#f0fdf4"></div>
-    <!-- Approval section -->
-    <div id="approval-section" class="hidden" style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:16px;margin-bottom:16px">
-      <div style="font-size:13px;font-weight:800;color:#92400e;margin-bottom:12px">🔐 Approval Details Required</div>
-      <label class="label" style="color:#92400e">Send for Approval To *</label>
-      <select id="f-approver" class="input" style="margin-bottom:12px"></select>
-      <label class="label" style="color:#92400e">Business Justification *</label>
-      <input id="f-justification" class="input" placeholder="e.g. Equipment for Q3 content production" oninput="updateTotalsPreview()"/>
-      <div id="justification-error" class="hidden" style="font-size:11px;color:#dc2626;margin-top:4px">Required for expenses above S$500</div>
-    </div>
-    <div class="flex">
-      <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1">Cancel</button>
-      <button class="btn btn-primary" id="submit-btn" onclick="submitReceipt()" style="flex:2" id="submit-btn">Save Receipt</button>
-    </div>
   </div>
-</div>
 
-<!-- Detail Modal -->
-<div id="detail-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeDetailModal()">
-  <div class="modal">
-    <div id="detail-content"></div>
+  <div class="section">
+    <div class="section-title">Receipt detail <span class="hint" id="resultCount"></span></div>
+    <div id="monthGroups"></div>
   </div>
-</div>
 
-<script>
-// ── State ──
-let expenses = [];
-let currentUser = "";
-let currentView = "dashboard";
-let expandedMonths = {};
-let refreshInterval = null;
+  <div class="tooltip" id="tooltip"></div>
 
-// ── Helpers ──
-const fmtSGD = v => `S$${Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",")}`;
-const getMonth = d => { const x=new Date(d); return `${MONTHS[x.getMonth()]} ${x.getFullYear()}`; };
-const nowStr = () => new Date().toLocaleString("en-SG",{dateStyle:"medium",timeStyle:"short"});
-const calcTotals = items => {
-  const sub = items.reduce((s,i)=>s+(parseFloat(i.unitPrice)||0)*(parseInt(i.qty)||0),0);
-  return { subtotal:+sub.toFixed(2), gst:+(sub*0.09).toFixed(2), total:+(sub*1.09).toFixed(2) };
-};
-
-// ── Name gate ──
-function enterApp() {
-  const name = document.getElementById("name-input").value.trim();
-  if (!name) return;
-  currentUser = name;
-  document.getElementById("user-label").textContent = name;
-  document.getElementById("submitter-label").textContent = name;
-  document.getElementById("name-gate").style.display = "none";
-  initSelects();
-  if (SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
-    document.getElementById("config-warning").classList.remove("hidden");
-    document.getElementById("loading-state").classList.add("hidden");
-    document.getElementById("summary-cards").classList.remove("hidden");
-    expenses = [];
-    renderAll();
-  } else {
-    loadExpenses();
-    refreshInterval = setInterval(loadExpenses, 20000);
-  }
-}
-
-function initSelects() {
-  const cat = document.getElementById("f-category");
-  CATEGORIES.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; cat.appendChild(o); });
-  const pay = document.getElementById("f-payment");
-  PAYMENT_METHODS.forEach(p => { const o=document.createElement("option"); o.value=p; o.textContent=p; pay.appendChild(o); });
-  const apr = document.getElementById("f-approver");
-  APPROVERS.forEach(a => { const o=document.createElement("option"); o.value=a; o.textContent=a; apr.appendChild(o); });
-}
-
-// ── API ──
-function setSyncStatus(msg, color) {
-  const el = document.getElementById("sync-status");
-  el.textContent = msg;
-  el.style.color = color;
-}
-
-async function loadExpenses() {
-  setSyncStatus("⏳ Loading…", "#f59e0b");
-  try {
-    const res = await fetch(`${SCRIPT_URL}?action=get`);
-    const data = await res.json();
-    if (data.expenses) {
-      expenses = data.expenses;
-      renderAll();
-      setSyncStatus("✓ Live", "#34d399");
-      document.getElementById("loading-state").classList.add("hidden");
-      document.getElementById("summary-cards").classList.remove("hidden");
-    }
-  } catch(e) {
-    setSyncStatus("⚠ Offline", "#ef4444");
-    document.getElementById("loading-state").innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;font-size:14px">⚠️ Could not connect to database. Check your Apps Script URL.</div>';
-  }
-}
-
-async function apiCall(params) {
-  setSyncStatus("💾 Saving…", "#f59e0b");
-  const url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
-  const res = await fetch(url);
-  const data = await res.json();
-  await loadExpenses();
-  return data;
-}
-
-// ── Filters ──
-function getFiltered() {
-  const month = document.getElementById("filter-month")?.value || "All";
-  const cat = document.getElementById("filter-cat")?.value || "All";
-  return expenses.filter(e =>
-    (month === "All" || getMonth(e.date) === month) &&
-    (cat === "All" || e.category === cat)
-  );
-}
-function clearFilters() {
-  document.getElementById("filter-month").value = "All";
-  document.getElementById("filter-cat").value = "All";
-  document.getElementById("clear-filters").classList.add("hidden");
-  renderAll();
-}
-
-// ── Render All ──
-function renderAll() {
-  updateFilterOptions();
-  const filtered = getFiltered();
-  renderSummaryCards(filtered);
-  renderAlerts(filtered);
-  renderDashboard(filtered);
-  renderList(filtered);
-  renderApprovals();
-  updateNavBadge();
-  const month = document.getElementById("filter-month")?.value || "All";
-  const cat = document.getElementById("filter-cat")?.value || "All";
-  document.getElementById("clear-filters").classList.toggle("hidden", month === "All" && cat === "All");
-}
-
-function updateFilterOptions() {
-  const monthSel = document.getElementById("filter-month");
-  const catSel = document.getElementById("filter-cat");
-  const curMonth = monthSel.value;
-  const curCat = catSel.value;
-
-  const months = ["All", ...[...new Set(expenses.map(e=>getMonth(e.date)))].sort((a,b)=>new Date(a)-new Date(b))];
-  const cats = ["All", ...[...new Set(expenses.map(e=>e.category))]];
-
-  monthSel.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join("");
-  catSel.innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join("");
-  if (months.includes(curMonth)) monthSel.value = curMonth;
-  if (cats.includes(curCat)) catSel.value = curCat;
-}
-
-function updateNavBadge() {
-  const count = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
-  const badge = document.getElementById("pending-badge");
-  if (count > 0) { badge.textContent = count; badge.classList.remove("hidden"); }
-  else badge.classList.add("hidden");
-}
-
-// ── Summary Cards ──
-function renderSummaryCards(filtered) {
-  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
-  const totalGST = filtered.reduce((s,e)=>s+e.gst,0);
-  const totalSavings = filtered.reduce((s,e)=>s+e.items.reduce((is,i)=>is+((i.originalPrice-i.unitPrice)*i.qty),0),0);
-  const pending = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
-  const cards = [
-    {label:"Total Spend",value:fmtSGD(totalSpend),sub:`${filtered.length} receipt(s)`,accent:"#3b82f6"},
-    {label:"Excl. GST",value:fmtSGD(totalSpend-totalGST),sub:"Net expenditure",accent:"#8b5cf6"},
-    {label:"GST Paid",value:fmtSGD(totalGST),sub:"Reclaimable if GST-reg.",accent:"#f59e0b"},
-    {label:"Total Savings",value:fmtSGD(totalSavings),sub:"Discounts captured",accent:"#10b981"},
-    ...(pending>0?[{label:"Pending Approval",value:`${pending}`,sub:"Awaiting sign-off",accent:"#ef4444"}]:[]),
-  ];
-  document.getElementById("summary-cards").innerHTML = cards.map(c=>`
-    <div class="summary-card" style="background:linear-gradient(135deg,${c.accent}15,${c.accent}05);border-color:${c.accent}30">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">${c.label}</div>
-      <div style="font-size:24px;font-weight:800;color:${c.accent}">${c.value}</div>
-      ${c.sub?`<div style="font-size:12px;color:#94a3b8;margin-top:4px">${c.sub}</div>`:""}
-    </div>`).join("");
-}
-
-// ── Alerts ──
-function renderAlerts(filtered) {
-  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
-  const totalGST = filtered.reduce((s,e)=>s+e.gst,0);
-  const totalSavings = filtered.reduce((s,e)=>s+e.items.reduce((is,i)=>is+((i.originalPrice-i.unitPrice)*i.qty),0),0);
-  const pending = expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending").length;
-  const alerts = [];
-  if(pending>0) alerts.push({type:"red",icon:"🚨",msg:`${pending} receipt(s) above S$${APPROVAL_THRESHOLD} awaiting approval. Review in the Approvals tab.`});
-  if(totalSpend>0&&totalGST/totalSpend>0.08) alerts.push({type:"blue",icon:"ℹ️",msg:`GST: ${fmtSGD(totalGST)} (${((totalGST/totalSpend)*100).toFixed(1)}%) — verify GST-registered vendors for input tax claims.`});
-  filtered.forEach(e=>{if(e.total>1000)alerts.push({type:"red",icon:"🚨",msg:`High-value: ${e.vendor} — ${fmtSGD(e.total)} on ${e.date}. Status: ${(e.approvalStatus||"").toUpperCase()}.`});});
-  if(totalSavings>0) alerts.push({type:"green",icon:"💰",msg:`Discounts captured: ${fmtSGD(totalSavings)}. Good purchasing behaviour.`});
-  const sec = document.getElementById("alerts-section");
-  if(alerts.length===0){sec.classList.add("hidden");return;}
-  sec.classList.remove("hidden");
-  document.getElementById("alerts-list").innerHTML = alerts.map(a=>`
-    <div class="alert-box alert-${a.type}"><span>${a.icon}</span><span>${a.msg}</span></div>`).join("");
-}
-
-// ── Dashboard ──
-function renderDashboard(filtered) {
-  const byMonth = {};
-  expenses.forEach(e=>{
-    const m=getMonth(e.date);
-    if(!byMonth[m])byMonth[m]={total:0,count:0,items:[]};
-    byMonth[m].total+=e.total;byMonth[m].count++;byMonth[m].items.push(e);
-  });
-  const monthEntries = Object.entries(byMonth).sort((a,b)=>new Date(a[0])-new Date(b[0]));
-  const maxTotal = Math.max(...monthEntries.map(([,d])=>d.total),1);
-
-  const byCategory = {};
-  filtered.forEach(e=>{if(!byCategory[e.category])byCategory[e.category]=0;byCategory[e.category]+=e.total;});
-  const catEntries = Object.entries(byCategory).sort((a,b)=>b[1]-a[1]);
-  const totalSpend = filtered.reduce((s,e)=>s+e.total,0);
-
-  document.getElementById("view-dashboard").innerHTML = `
-    <div class="card">
-      <div style="font-size:15px;font-weight:800;margin-bottom:18px">📅 Monthly Breakdown</div>
-      ${monthEntries.length===0?'<div style="color:#94a3b8;font-size:14px">No data yet.</div>':monthEntries.map(([month,data])=>`
-        <div style="margin-bottom:12px">
-          <div class="month-row" onclick="toggleMonth('${month}')">
-            <div style="width:80px;font-size:13px;font-weight:700">${month}</div>
-            <div class="bar-container"><div class="bar-fill bar-blue" style="width:${(data.total/maxTotal*100).toFixed(1)}%"></div></div>
-            <div style="width:90px;text-align:right;font-size:14px;font-weight:800">${fmtSGD(data.total)}</div>
-            <div style="width:60px;text-align:right;font-size:12px;color:#64748b">${data.count} rcpt</div>
-            <div style="font-size:12px;color:#94a3b8" id="arrow-${month.replace(/ /g,'_')}">${expandedMonths[month]?"▲":"▼"}</div>
-          </div>
-          <div id="month-children-${month.replace(/ /g,'_')}" class="${expandedMonths[month]?"month-children":"hidden"}">
-            ${data.items.map(e=>`
-              <div class="month-exp-row" onclick="openDetail('${e.id}')">
-                <div>
-                  <div style="font-size:13px;font-weight:600">${e.vendor}</div>
-                  <div style="font-size:11px;color:#94a3b8">${e.date} · ${e.category}${e.submittedBy?` · by ${e.submittedBy}`:""}</div>
-                  ${e.requiresApproval?`<div style="margin-top:3px">${approvalBadgeHTML(e.approvalStatus)}</div>`:""}
-                </div>
-                <div style="font-size:14px;font-weight:700;color:#3b82f6">${fmtSGD(e.total)}</div>
-              </div>`).join("")}
-          </div>
-        </div>`).join("")}
-    </div>
-    <div class="card">
-      <div style="font-size:15px;font-weight:800;margin-bottom:18px">🏷️ By Category</div>
-      ${catEntries.length===0?'<div style="color:#94a3b8;font-size:14px">No data.</div>':catEntries.map(([cat,amt])=>{
-        const pct=totalSpend>0?(amt/totalSpend*100).toFixed(1):0;
-        return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="width:170px;font-size:13px;font-weight:600;color:#334155">${cat}</div>
-          <div class="bar-container"><div class="bar-fill bar-purple" style="width:${pct}%"></div></div>
-          <div style="width:80px;text-align:right;font-size:13px;font-weight:700">${fmtSGD(amt)}</div>
-          <div style="width:40px;text-align:right;font-size:12px;color:#94a3b8">${pct}%</div>
-        </div>`;}).join("")}
-    </div>`;
-}
-
-function toggleMonth(month) {
-  expandedMonths[month] = !expandedMonths[month];
-  const key = month.replace(/ /g,'_');
-  document.getElementById(`month-children-${key}`).classList.toggle("hidden",!expandedMonths[month]);
-  document.getElementById(`arrow-${key}`).textContent = expandedMonths[month]?"▲":"▼";
-}
-
-// ── List ──
-function renderList(filtered) {
-  const sorted = [...filtered].reverse();
-  document.getElementById("view-list").innerHTML = `
-    <div class="card">
-      <div style="font-size:15px;font-weight:800;margin-bottom:18px">📋 All Receipts (${sorted.length})</div>
-      ${sorted.length===0?'<div style="color:#94a3b8">No receipts match the current filter.</div>':sorted.map(e=>`
-        <div class="receipt-row" onclick="openDetail('${e.id}')">
-          <div class="receipt-icon" style="background:${e.requiresApproval&&e.approvalStatus==='pending'?'#fff7ed':'#eff6ff'}">
-            ${e.requiresApproval&&e.approvalStatus==='pending'?'⏳':'🧾'}
-          </div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:700">${e.vendor}</div>
-            <div style="font-size:12px;color:#64748b;margin-top:2px">${e.date} · #${e.receiptNo||"—"}${e.submittedBy?` · ${e.submittedBy}`:""}</div>
-            <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap">
-              <span class="badge badge-blue">${e.category}</span>
-              ${e.requiresApproval?approvalBadgeHTML(e.approvalStatus):""}
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:16px;font-weight:800">${fmtSGD(e.total)}</div>
-            <div style="font-size:11px;color:#94a3b8">${e.paymentMethod}</div>
-          </div>
-        </div>`).join("")}
-    </div>`;
-}
-
-// ── Approvals ──
-function renderApprovals() {
-  const policyBox = `<div style="background:linear-gradient(135deg,#1e3a5f,#0f172a);border-radius:14px;padding:18px 22px;margin-bottom:20px;color:#e2e8f0;display:flex;gap:14px;align-items:flex-start">
-    <span style="font-size:24px">🔐</span>
-    <div>
-      <div style="font-weight:800;font-size:15px;margin-bottom:4px">Approval Policy</div>
-      <div style="font-size:13px;color:#94a3b8;line-height:1.6">All expenses exceeding <strong style="color:#fbbf24">S$${APPROVAL_THRESHOLD}</strong> require documented approval before reimbursement or posting.</div>
-    </div>
-  </div>`;
-
-  const groups = {
-    pending: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="pending"),
-    approved: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="approved"),
-    rejected: expenses.filter(e=>e.requiresApproval&&e.approvalStatus==="rejected"),
-  };
-  const config = {
-    pending:{bg:"#fff7ed",border:"#fed7aa",txt:"#9a3412",label:"⏳ Pending Approval"},
-    approved:{bg:"#f0fdf4",border:"#bbf7d0",txt:"#065f46",label:"✓ Approved"},
-    rejected:{bg:"#fff1f2",border:"#fecdd3",txt:"#991b1b",label:"✗ Rejected"},
-  };
-
-  let html = policyBox;
-  ["pending","approved","rejected"].forEach(status=>{
-    const group = groups[status];
-    if(!group.length) return;
-    const c = config[status];
-    html += `<div class="card"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:${c.txt}">${c.label} (${group.length})</div>
-      ${group.map(e=>`
-        <div class="approval-card" style="background:${c.bg};border-color:${c.border}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <div style="font-size:14px;font-weight:700">${e.vendor}</div>
-              <div style="font-size:12px;color:#64748b;margin-top:2px">${e.date} · ${e.category} · #${e.receiptNo||"—"}</div>
-              ${e.submittedBy?`<div style="font-size:12px;color:#64748b">Submitted by: <strong>${e.submittedBy}</strong>${e.submittedAt?` · ${e.submittedAt}`:""}</div>`:""}
-              ${e.justification?`<div style="font-size:12px;color:#475569;margin-top:6px;background:rgba(255,255,255,0.6);border-radius:6px;padding:6px 10px">📝 <em>"${e.justification}"</em></div>`:""}
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:17px;font-weight:800;color:${c.txt}">${fmtSGD(e.total)}</div>
-              ${status==="pending"?`<button class="btn" style="margin-top:8px;padding:6px 14px;font-size:12px;background:#0f172a;color:#fff" onclick="openDetail('${e.id}')">Review →</button>`:""}
-            </div>
-          </div>
-          ${e.approvalHistory?.length?`<div style="margin-top:10px;border-top:1px solid rgba(0,0,0,0.06);padding-top:10px">
-            ${e.approvalHistory.map(h=>`<div class="history-entry"><strong>${h.action==="approve"?"✓ Approved":h.action==="reject"?"✗ Rejected":"📤 Submitted"}</strong> by ${h.by} · ${h.at}${h.note?` — "${h.note}"`:""}</div>`).join("")}
-          </div>`:""}
-        </div>`).join("")}
-    </div>`;
-  });
-  if(!expenses.filter(e=>e.requiresApproval).length) html += '<div style="text-align:center;padding:60px;color:#94a3b8;font-size:14px">No expenses requiring approval yet.</div>';
-  document.getElementById("view-approvals").innerHTML = html;
-}
-
-// ── Detail Modal ──
-function openDetail(id) {
-  const e = expenses.find(x=>x.id==id);
-  if(!e) return;
-  const needsApproval = e.requiresApproval && e.approvalStatus === "pending";
-  document.getElementById("detail-content").innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
-      <div>
-        <div style="font-size:18px;font-weight:800">${e.vendor}</div>
-        <div style="font-size:13px;color:#64748b;margin-top:2px">${e.date} · Receipt #${e.receiptNo||"—"}</div>
-        ${e.submittedBy?`<div style="font-size:12px;color:#94a3b8;margin-top:2px">Submitted by ${e.submittedBy}${e.submittedAt?` · ${e.submittedAt}`:""}</div>`:""}
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h2>Add a receipt</h2>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="mDate">
       </div>
-      <button class="btn btn-ghost" onclick="closeDetailModal()" style="padding:6px 12px;font-size:16px">✕</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-      <span class="badge badge-blue">${e.category}</span>
-      <span class="badge badge-gray">${e.paymentMethod}</span>
-      ${e.requiresApproval?approvalBadgeHTML(e.approvalStatus):""}
-    </div>
-
-    ${needsApproval?`
-    <div class="approval-banner" style="background:#fff7ed;border:1.5px solid #fed7aa">
-      <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">⏳ Approval Required</div>
-      <div style="font-size:12px;color:#78350f">This expense exceeds S$${APPROVAL_THRESHOLD} and requires sign-off.</div>
-      ${e.justification?`<div style="font-size:12px;color:#92400e;margin-top:8px;font-style:italic">"${e.justification}"</div>`:""}
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn btn-green" style="flex:1" onclick="showApprovalForm('${e.id}','approve')">✓ Approve</button>
-        <button class="btn btn-red" style="flex:1" onclick="showApprovalForm('${e.id}','reject')">✗ Reject</button>
+      <div class="field">
+        <label>Vendor / merchant</label>
+        <input type="text" id="mVendor" placeholder="e.g. Grab, Starbucks...">
       </div>
-      <div id="approval-form" class="hidden" style="margin-top:14px;background:#fff;border-radius:10px;padding:14px;border:1px solid #e2e8f0">
-        <div id="approval-form-title" style="font-size:13px;font-weight:700;margin-bottom:10px"></div>
-        <label class="label">Approver</label>
-        <select id="d-approver" class="input" style="margin-bottom:10px">${APPROVERS.map(a=>`<option>${a}</option>`).join("")}</select>
-        <label class="label">Remarks (optional)</label>
-        <input id="d-note" class="input" placeholder="Add a note…" style="margin-bottom:12px"/>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost" onclick="hideApprovalForm()" style="flex:1">Back</button>
-          <button class="btn" id="d-confirm-btn" style="flex:2;color:#fff" onclick="confirmApproval('${e.id}')"></button>
+      <div class="field">
+        <label>Expense type</label>
+        <select id="mType"></select>
+      </div>
+      <div class="field">
+        <label>Line items</label>
+        <div id="itemRows"></div>
+        <button class="btn" id="addItemRow" type="button" style="margin-top:4px;">+ Add line item</button>
+      </div>
+      <div class="field">
+        <label>Receipts from</label>
+        <input type="text" id="mFrom" placeholder="e.g. Employee name / department">
+      </div>
+      <div class="field">
+        <label>Purpose (if any)</label>
+        <input type="text" id="mPurpose" placeholder="e.g. Client meeting, team lunch...">
+      </div>
+      <div class="field">
+        <label>Approved by</label>
+        <input type="text" id="mApproved" placeholder="e.g. Manager name">
+      </div>
+      <div class="modal-footer">
+        <div class="modal-total" id="modalTotal">Total: $0.00</div>
+        <div>
+          <button class="btn" id="cancelModal" type="button">Cancel</button>
+          <button class="btn primary" id="saveModal" type="button">Save receipt</button>
         </div>
       </div>
-    </div>`:""}
-
-    ${e.requiresApproval&&e.approvalStatus!=="pending"?`
-    <div class="approval-banner" style="background:${e.approvalStatus==="approved"?"#f0fdf4":"#fff1f2"};border:1.5px solid ${e.approvalStatus==="approved"?"#bbf7d0":"#fecdd3"}">
-      ${(e.approvalHistory||[]).filter(h=>h.action!=="submitted").map(h=>`
-        <div style="font-size:13px;color:${e.approvalStatus==="approved"?"#065f46":"#991b1b"}">
-          <strong>${e.approvalStatus==="approved"?"✓ Approved":"✗ Rejected"}</strong> by ${h.by} · ${h.at}
-          ${h.note?`<div style="font-size:12px;margin-top:2px;font-style:italic">"${h.note}"</div>`:""}
-        </div>`).join("")}
-    </div>`:""}
-
-    <div style="background:#f8fafc;border-radius:10px;overflow:hidden;margin-bottom:16px">
-      <table>
-        <thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit</th><th style="text-align:right">Amount</th></tr></thead>
-        <tbody>
-          ${e.items.map(item=>`<tr>
-            <td>${item.name}${item.discount&&item.discount!=="0%"?`<div style="font-size:11px;color:#10b981;margin-top:2px">✓ ${item.discount} off — saved ${fmtSGD((item.originalPrice-item.unitPrice)*item.qty)}</div>`:""}</td>
-            <td style="text-align:center;color:#64748b">${item.qty}</td>
-            <td style="text-align:right;color:#64748b">${fmtSGD(item.unitPrice)}</td>
-            <td style="text-align:right;font-weight:700">${fmtSGD(item.unitPrice*item.qty)}</td>
-          </tr>`).join("")}
-        </tbody>
-      </table>
     </div>
-    <div style="border-top:2px solid #e2e8f0;padding-top:14px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:#64748b;margin-bottom:6px"><span>Subtotal (excl. GST)</span><span>${fmtSGD(e.subtotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:#f59e0b;margin-bottom:10px"><span>GST 9%</span><span>${fmtSGD(e.gst)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:800"><span>Total</span><span style="color:#3b82f6">${fmtSGD(e.total)}</span></div>
-    </div>
-    ${e.notes?`<div style="margin-top:14px;padding:10px 14px;background:#fffbeb;border-radius:8px;font-size:13px;color:#92400e">📝 ${e.notes}</div>`:""}
-    <button onclick="deleteExpense('${e.id}','${e.vendor.replace(/'/g,"\\'")}',${e.total})" style="margin-top:20px;width:100%;padding:10px;border-radius:10px;border:1.5px solid #fecdd3;background:#fff1f2;color:#be123c;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">🗑 Delete this receipt</button>
-  `;
-  document.getElementById("detail-modal").classList.remove("hidden");
-}
+  </div>
 
-function closeDetailModal() { document.getElementById("detail-modal").classList.add("hidden"); }
+</div>
 
-let currentApprovalAction = null;
-function showApprovalForm(id, action) {
-  currentApprovalAction = action;
-  const form = document.getElementById("approval-form");
-  const title = document.getElementById("approval-form-title");
-  const btn = document.getElementById("d-confirm-btn");
-  title.textContent = action==="approve"?"✓ Confirm Approval":"✗ Confirm Rejection";
-  title.style.color = action==="approve"?"#065f46":"#991b1b";
-  btn.textContent = `Confirm ${action==="approve"?"Approval":"Rejection"}`;
-  btn.style.background = action==="approve"?"#10b981":"#ef4444";
-  form.classList.remove("hidden");
-}
-function hideApprovalForm() { document.getElementById("approval-form").classList.add("hidden"); }
+<script>
+(function(){
 
-async function confirmApproval(id) {
-  const approver = document.getElementById("d-approver").value;
-  const note = document.getElementById("d-note").value;
-  await apiCall({ action:"approve", id, status:currentApprovalAction==="approve"?"approved":"rejected", approver, note });
-  closeDetailModal();
-}
+  var CATEGORIES = [
+    { key: "Meals & Entertainment", color: "var(--cat-1)" },
+    { key: "Electronics & Equipment", color: "var(--cat-2)" },
+    { key: "Groceries & Pantry", color: "var(--cat-3)" },
+    { key: "Travel & Transport", color: "var(--cat-4)" },
+    { key: "Office & Supplies", color: "var(--cat-5)" },
+    { key: "Accommodation", color: "var(--cat-6)" },
+    { key: "Client & Marketing", color: "var(--cat-7)" },
+    { key: "Other", color: "var(--cat-8)" }
+  ];
 
-async function deleteExpense(id, vendor, total) {
-  if (!confirm(`Delete "${vendor}" (${fmtSGD(total)})? This cannot be undone.`)) return;
-  await apiCall({ action:"delete", id });
-  closeDetailModal();
-}
+  function catColor(type){
+    var c = CATEGORIES.find(function(c){ return c.key === type; });
+    return c ? c.color : "var(--cat-8)";
+  }
+  function resolveVar(varExpr){
+    var name = varExpr.replace("var(","").replace(")","");
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || getComputedStyle(document.getElementById('vizRoot')).getPropertyValue(name).trim();
+  }
 
-// ── Badge HTML ──
-function approvalBadgeHTML(status) {
-  if(status==="approved") return '<span class="badge badge-green">✓ Approved</span>';
-  if(status==="rejected") return '<span class="badge badge-red">✗ Rejected</span>';
-  if(status==="not_required") return '<span class="badge badge-gray">No Approval Needed</span>';
-  return '<span class="badge badge-amber">⏳ Pending Approval</span>';
-}
-
-// ── Views ──
-function setView(v) {
-  currentView = v;
-  ["dashboard","list","approvals"].forEach(n=>{
-    document.getElementById(`view-${n}`).classList.toggle("hidden",n!==v);
-    document.getElementById(`nav-${n}`).className = `nav-btn ${n===v?"active":"inactive"}`;
-  });
-}
-
-// ── Add Receipt Form ──
-let lineItems = [{name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}];
-
-function openAddModal() {
-  lineItems = [{name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}];
-  document.getElementById("f-date").value="";
-  document.getElementById("f-receipt").value="";
-  document.getElementById("f-vendor").value="";
-  document.getElementById("f-notes").value="";
-  document.getElementById("f-justification").value="";
-  document.getElementById("f-category").selectedIndex=0;
-  document.getElementById("f-payment").selectedIndex=0;
-  renderLineItems();
-  updateTotalsPreview();
-  document.getElementById("add-modal").classList.remove("hidden");
-}
-function closeAddModal() { document.getElementById("add-modal").classList.add("hidden"); }
-
-function renderLineItems() {
-  document.getElementById("items-container").innerHTML = lineItems.map((item,i)=>`
-    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid #e2e8f0">
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <div style="flex:1"><label class="label">Item Name</label><input class="input" value="${item.name}" oninput="lineItems[${i}].name=this.value" placeholder="Description"/></div>
-        <div style="width:60px"><label class="label">Qty</label><input type="number" min="1" class="input" value="${item.qty}" oninput="lineItems[${i}].qty=this.value;updateTotalsPreview()"/></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <div style="flex:1"><label class="label">Unit Price (after disc.)</label><input type="number" step="0.01" class="input" value="${item.unitPrice}" oninput="lineItems[${i}].unitPrice=this.value;updateTotalsPreview()"/></div>
-        <div style="flex:1"><label class="label">Original Price</label><input type="number" step="0.01" class="input" value="${item.originalPrice}" oninput="lineItems[${i}].originalPrice=this.value"/></div>
-        <div style="width:80px"><label class="label">Discount</label><input class="input" value="${item.discount}" oninput="lineItems[${i}].discount=this.value" placeholder="0%"/></div>
-      </div>
-      ${lineItems.length>1?`<button onclick="removeLineItem(${i})" style="margin-top:8px;background:none;border:none;color:#ef4444;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit">✕ Remove</button>`:""}
-    </div>`).join("");
-}
-function addLineItem() { lineItems.push({name:"",qty:1,unitPrice:0,originalPrice:0,discount:"0%"}); renderLineItems(); updateTotalsPreview(); }
-function removeLineItem(i) { lineItems.splice(i,1); renderLineItems(); updateTotalsPreview(); }
-
-function updateTotalsPreview() {
-  const {subtotal,gst,total} = calcTotals(lineItems);
-  const needs = total > APPROVAL_THRESHOLD;
-  const justification = document.getElementById("f-justification")?.value.trim()||"";
-  const preview = document.getElementById("totals-preview");
-  preview.style.background = needs?"#fff7ed":"#f0fdf4";
-  preview.style.borderColor = needs?"#fed7aa":"#bbf7d0";
-  preview.innerHTML = `
-    <div style="display:flex;justify-content:space-between;color:#64748b"><span>Subtotal</span><span>${fmtSGD(subtotal)}</span></div>
-    <div style="display:flex;justify-content:space-between;color:#f59e0b"><span>GST 9%</span><span>${fmtSGD(gst)}</span></div>
-    <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:6px"><span>Total</span><span style="color:${needs?"#c2410c":"#10b981"}">${fmtSGD(total)}</span></div>
-    ${needs?`<div style="margin-top:8px;font-size:12px;color:#92400e;font-weight:600">⚠️ Exceeds S$${APPROVAL_THRESHOLD} — approval required before processing.</div>`:""}`;
-  document.getElementById("approval-section").classList.toggle("hidden",!needs);
-  const btn = document.getElementById("submit-btn");
-  const disabled = needs && !justification;
-  btn.disabled = disabled;
-  btn.style.background = disabled?"#cbd5e1":"linear-gradient(135deg,#3b82f6,#6366f1)";
-  btn.textContent = needs?"Submit for Approval":"Save Receipt";
-}
-
-async function submitReceipt() {
-  const date = document.getElementById("f-date").value;
-  const vendor = document.getElementById("f-vendor").value.trim();
-  if(!date||!vendor) { alert("Please fill in Date and Vendor."); return; }
-  const justification = document.getElementById("f-justification").value.trim();
-  const {subtotal,gst,total} = calcTotals(lineItems);
-  if(total>APPROVAL_THRESHOLD&&!justification) return;
-  const btn = document.getElementById("submit-btn");
-  btn.textContent = "💾 Saving…"; btn.disabled = true;
-  const data = {
-    date, vendor,
-    category: document.getElementById("f-category").value,
-    receiptNo: document.getElementById("f-receipt").value,
-    paymentMethod: document.getElementById("f-payment").value,
-    notes: document.getElementById("f-notes").value,
-    submittedBy: currentUser,
-    submittedAt: nowStr(),
-    items: lineItems.map(i=>({...i,unitPrice:parseFloat(i.unitPrice)||0,originalPrice:parseFloat(i.originalPrice)||parseFloat(i.unitPrice)||0,qty:parseInt(i.qty)||1})),
-    subtotal, gst, total,
-    justification,
-    requestedApprover: document.getElementById("f-approver")?.value||"",
+  var STATE = {
+    receipts: [
+      {
+        id: 1, date: "2026-06-23", vendor: "Insta360@Suntec Store", receiptNo: "R003655",
+        type: "Electronics & Equipment", paymentMethod: "Visa/Master", gst: 109.07,
+        items: [
+          { name: "Insta360 Luna Ultra Standard Bundle Cosmic Black", qty: 1, amount: 920.55 },
+          { name: "Insta360 Mic Pro (1 TX + 1 RX)", qty: 1, amount: 233.10 },
+          { name: "Sandisk Ext MicroSD 128GB 190M", qty: 2, amount: 103.32 },
+          { name: "Insta360 Z03, Luna Ultra, Flexicare Physical Card (1 Year)", qty: 1, amount: 64.00 }
+        ],
+        receiptsFrom: "", purpose: "", approvedBy: ""
+      },
+      {
+        id: 2, date: "2026-07-10", vendor: "Subway #40967-0", receiptNo: "1/A-470511",
+        type: "Meals & Entertainment", paymentMethod: "MasterCard", gst: 0,
+        items: [
+          { name: "12\" Rst Chicken Sub", qty: 1, amount: 14.50 },
+          { name: "12\" Chk-Ham Sub", qty: 1, amount: 13.30 },
+          { name: "12\" B.M.T. Sub", qty: 1, amount: 14.80 },
+          { name: "12\" Tuna Sub", qty: 1, amount: 13.30 },
+          { name: "Avocado Caesar Chicken Ergo Bowl", qty: 1, amount: 10.50 }
+        ],
+        receiptsFrom: "", purpose: "", approvedBy: ""
+      },
+      {
+        id: 3, date: "2026-07-10", vendor: "Jollibee # Suntec", receiptNo: "Queue 4186",
+        type: "Meals & Entertainment", paymentMethod: "MasterCard", gst: 7.07,
+        items: [
+          { name: "Group Meal A (8pc Chickenjoy Bucket, Fries, Buttered Corn, 2x Coke Zero, 2x Sprite)", qty: 1, amount: 32.50 },
+          { name: "Spaghetti (Ala Carte)", qty: 2, amount: 10.60 },
+          { name: "8pc Chickenjoy Bucket", qty: 1, amount: 26.50 },
+          { name: "5pc Chicken Tenders", qty: 1, amount: 8.50 },
+          { name: "Chicken Loaded Fries (Garlic Ranch)", qty: 1, amount: 7.50 }
+        ],
+        receiptsFrom: "", purpose: "", approvedBy: ""
+      },
+      {
+        id: 4, date: "2026-07-10", vendor: "Cold Storage (CS Suntec City)", receiptNo: "TR0139",
+        type: "Groceries & Pantry", paymentMethod: "MasterCard", gst: 1.08,
+        items: [
+          { name: "CCN Water TP 1L", qty: 1, amount: 3.95 },
+          { name: "Plastic Bag Charge", qty: 1, amount: 0.05 },
+          { name: "Lemon Tea LS 1.5L (after discount)", qty: 1, amount: 2.45 },
+          { name: "Pokka Jasmine Green Tea 1.5L (after discount)", qty: 1, amount: 2.45 },
+          { name: "Pokka Oolong Tea 1.5L (after discount)", qty: 1, amount: 2.35 },
+          { name: "ATH Ayataka JGT 1.5L (after discount)", qty: 1, amount: 2.15 }
+        ],
+        receiptsFrom: "", purpose: "", approvedBy: ""
+      }
+    ],
+    filters: { month: "all", type: "all", search: "" },
+    collapsedMonths: {}
   };
-  await apiCall({ action:"add", data:JSON.stringify(data) });
-  closeAddModal();
-}
+
+  var nextId = 5;
+  function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
+  function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+  function monthLabel(key){
+    var parts = key.split("-"); var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+  function dateLabel(dateStr){
+    var d = new Date(dateStr+"T00:00:00");
+    return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // ---------- filtering ----------
+  function filteredReceipts(){
+    var f = STATE.filters;
+    return STATE.receipts.filter(function(r){
+      if (f.month !== "all" && monthKey(r.date) !== f.month) return false;
+      if (f.type !== "all" && r.type !== f.type) return false;
+      if (f.search){
+        var hay = [r.vendor, r.type, r.receiptsFrom, r.purpose, r.approvedBy].concat(r.items.map(function(i){return i.name;})).join(" ").toLowerCase();
+        if (hay.indexOf(f.search.toLowerCase()) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  // ---------- populate filter dropdowns ----------
+  function populateFilters(){
+    var monthSel = document.getElementById('filterMonth');
+    var typeSel = document.getElementById('filterType');
+    var months = Array.from(new Set(STATE.receipts.map(function(r){ return monthKey(r.date); }))).sort();
+    monthSel.innerHTML = '<option value="all">All months</option>' + months.map(function(m){
+      return '<option value="'+m+'">'+monthLabel(m)+'</option>';
+    }).join("");
+    monthSel.value = STATE.filters.month;
+
+    typeSel.innerHTML = '<option value="all">All types</option>' + CATEGORIES.map(function(c){
+      return '<option value="'+c.key+'">'+c.key+'</option>';
+    }).join("");
+    typeSel.value = STATE.filters.type;
+  }
+
+  // ---------- stat tiles ----------
+  function renderStats(){
+    var rows = filteredReceipts();
+    var total = rows.reduce(function(s,r){ return s + amountOf(r); }, 0);
+    var count = rows.length;
+    var avg = count ? total / count : 0;
+    var byType = {};
+    rows.forEach(function(r){ byType[r.type] = (byType[r.type]||0) + amountOf(r); });
+    var topType = Object.keys(byType).sort(function(a,b){ return byType[b]-byType[a]; })[0];
+
+    var html = "";
+    html += statTile("Total spend", fmt(total), rows.length + " receipt" + (rows.length===1?"":"s"));
+    html += statTile("Receipts", String(count), "matching current filters");
+    html += statTile("Average per receipt", fmt(avg), "");
+    html += statTile("Top category", topType ? topType : "—", topType ? fmt(byType[topType]) : "", topType ? catColor(topType) : null);
+    document.getElementById('statRow').innerHTML = html;
+  }
+  function statTile(label, value, sub, color){
+    return '<div class="stat-tile"><div class="label">'+label+'</div><div class="value">'+
+      (color ? '<span class="swatch" style="background:'+color+'"></span>' : '') + value +
+      '</div><div class="sub">'+(sub||"")+'</div></div>';
+  }
+
+  // ---------- charts ----------
+  var monthChartIsTable = false, typeChartIsTable = false;
+  var mutedTypes = {};
+
+  function aggregateByMonthAndType(rows){
+    var months = {};
+    rows.forEach(function(r){
+      var mk = monthKey(r.date);
+      if (!months[mk]) months[mk] = {};
+      months[mk][r.type] = (months[mk][r.type]||0) + amountOf(r);
+    });
+    var monthKeys = Object.keys(months).sort();
+    return { monthKeys: monthKeys, months: months };
+  }
+
+  function renderMonthChart(){
+    var rows = filteredReceipts();
+    var agg = aggregateByMonthAndType(rows);
+    var svg = document.getElementById('monthChart');
+    var wrap = document.getElementById('monthChartWrap');
+    var W = wrap.clientWidth || 480, H = 260;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = "";
+
+    var typesPresent = CATEGORIES.filter(function(c){
+      return agg.monthKeys.some(function(mk){ return agg.months[mk][c.key]; });
+    });
+
+    // legend
+    var legend = document.getElementById('monthLegend');
+    legend.innerHTML = typesPresent.map(function(c){
+      var isMuted = mutedTypes[c.key];
+      return '<div class="legend-item'+(isMuted?' muted':'')+'" data-type="'+c.key+'">'+
+        '<span class="legend-swatch" style="background:'+resolveVar(c.color)+'"></span>'+c.key+'</div>';
+    }).join("");
+    legend.querySelectorAll('.legend-item').forEach(function(el){
+      el.addEventListener('click', function(){
+        var t = el.getAttribute('data-type');
+        mutedTypes[t] = !mutedTypes[t];
+        renderMonthChart();
+      });
+    });
+
+    if (monthChartIsTable){
+      renderMonthTableView(agg, typesPresent);
+      return;
+    }
+
+    if (agg.monthKeys.length === 0){
+      svg.innerHTML = '<text x="20" y="40">No data for current filters.</text>';
+      return;
+    }
+
+    var padL = 70, padR = 20, padT = 16, padB = 34;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var maxTotal = Math.max.apply(null, agg.monthKeys.map(function(mk){
+      return Object.keys(agg.months[mk]).reduce(function(s,t){ return mutedTypes[t] ? s : s + agg.months[mk][t]; }, 0);
+    }));
+    maxTotal = maxTotal * 1.15 || 1;
+
+    var n = agg.monthKeys.length;
+    var bandW = plotW / n;
+    var barW = Math.min(64, bandW * 0.5);
+
+    // gridlines + y labels
+    var steps = 4;
+    for (var s = 0; s <= steps; s++){
+      var val = maxTotal * s / steps;
+      var y = padT + plotH - (val/maxTotal)*plotH;
+      var line = document.createElementNS("http://www.w3.org/2000/svg","line");
+      line.setAttribute("x1", padL); line.setAttribute("x2", W-padR);
+      line.setAttribute("y1", y); line.setAttribute("y2", y);
+      line.setAttribute("class", "grid-line");
+      svg.appendChild(line);
+      var t = document.createElementNS("http://www.w3.org/2000/svg","text");
+      t.setAttribute("x", padL - 8); t.setAttribute("y", y+4); t.setAttribute("text-anchor","end");
+      t.textContent = "$" + Math.round(val);
+      svg.appendChild(t);
+    }
+
+    agg.monthKeys.forEach(function(mk, idx){
+      var cx = padL + bandW * idx + bandW/2;
+      var yCursor = padT + plotH;
+      CATEGORIES.forEach(function(c){
+        var v = agg.months[mk][c.key];
+        if (!v || mutedTypes[c.key]) return;
+        var segH = (v/maxTotal) * plotH;
+        var rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+        rect.setAttribute("x", cx - barW/2);
+        rect.setAttribute("y", yCursor - segH);
+        rect.setAttribute("width", barW);
+        rect.setAttribute("height", Math.max(segH - 2, 0));
+        rect.setAttribute("fill", resolveVar(c.color));
+        rect.setAttribute("rx", 3);
+        rect.setAttribute("class", "bar-seg");
+        rect.addEventListener("mousemove", function(e){ showTooltip(e, c.key + "<br>" + monthLabel(mk) + "<br><b>" + fmt(v) + "</b>"); });
+        rect.addEventListener("mouseleave", hideTooltip);
+        svg.appendChild(rect);
+        yCursor -= segH;
+      });
+      var lbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x", cx); lbl.setAttribute("y", H - padB + 18); lbl.setAttribute("text-anchor","middle");
+      lbl.textContent = monthLabel(mk).split(" ")[0].slice(0,3) + " " + monthLabel(mk).split(" ")[1];
+      svg.appendChild(lbl);
+
+      var total = Object.keys(agg.months[mk]).reduce(function(s,t){ return mutedTypes[t] ? s : s + agg.months[mk][t]; }, 0);
+      var totalLbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+      totalLbl.setAttribute("x", cx); totalLbl.setAttribute("y", padT + plotH - (total/maxTotal)*plotH - 8);
+      totalLbl.setAttribute("text-anchor","middle"); totalLbl.setAttribute("class","bar-label");
+      totalLbl.textContent = fmt(total);
+      svg.appendChild(totalLbl);
+    });
+
+    var axis = document.createElementNS("http://www.w3.org/2000/svg","line");
+    axis.setAttribute("x1", padL); axis.setAttribute("x2", W-padR);
+    axis.setAttribute("y1", padT+plotH); axis.setAttribute("y2", padT+plotH);
+    axis.setAttribute("class","axis-line");
+    svg.appendChild(axis);
+  }
+
+  function renderMonthTableView(agg, typesPresent){
+    var html = '<table class="data-table"><thead><tr><th>Month</th>' + typesPresent.map(function(c){return '<th>'+c.key+'</th>';}).join("") + '<th>Total</th></tr></thead><tbody>';
+    agg.monthKeys.forEach(function(mk){
+      var total = 0;
+      html += '<tr><td>'+monthLabel(mk)+'</td>';
+      typesPresent.forEach(function(c){
+        var v = agg.months[mk][c.key] || 0;
+        total += v;
+        html += '<td>'+(v?fmt(v):"—")+'</td>';
+      });
+      html += '<td><b>'+fmt(total)+'</b></td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('monthChartTable').innerHTML = html;
+  }
+
+  function renderTypeChart(){
+    var rows = filteredReceipts();
+    var svg = document.getElementById('typeChart');
+    var wrap = document.getElementById('typeChartWrap');
+    var W = wrap.clientWidth || 380, H = 260;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = "";
+
+    var byType = {};
+    rows.forEach(function(r){ byType[r.type] = (byType[r.type]||0) + amountOf(r); });
+    var typesPresent = CATEGORIES.filter(function(c){ return byType[c.key]; });
+
+    if (typeChartIsTable){
+      var html = '<table class="data-table"><thead><tr><th>Type</th><th>Total</th></tr></thead><tbody>';
+      typesPresent.forEach(function(c){ html += '<tr><td>'+c.key+'</td><td>'+fmt(byType[c.key])+'</td></tr>'; });
+      html += '</tbody></table>';
+      document.getElementById('typeChartTable').innerHTML = html;
+      return;
+    }
+
+    if (typesPresent.length === 0){
+      svg.innerHTML = '<text x="20" y="40">No data for current filters.</text>';
+      return;
+    }
+
+    var padL = 172, padR = 50, padT = 10, padB = 10;
+    var rowH = Math.min(34, (H - padT - padB) / typesPresent.length);
+    var plotW = W - padL - padR;
+    var maxVal = Math.max.apply(null, typesPresent.map(function(c){ return byType[c.key]; })) * 1.15;
+
+    typesPresent.forEach(function(c, idx){
+      var y = padT + idx * rowH;
+      var v = byType[c.key];
+      var barW = (v/maxVal) * plotW;
+
+      var label = document.createElementNS("http://www.w3.org/2000/svg","text");
+      label.setAttribute("x", padL - 10); label.setAttribute("y", y + rowH/2 + 4); label.setAttribute("text-anchor","end");
+      label.textContent = c.key;
+      svg.appendChild(label);
+
+      var rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      rect.setAttribute("x", padL); rect.setAttribute("y", y + rowH*0.18);
+      rect.setAttribute("width", Math.max(barW,2)); rect.setAttribute("height", rowH*0.64);
+      rect.setAttribute("fill", resolveVar(c.color)); rect.setAttribute("rx", 3);
+      rect.setAttribute("class","bar-seg");
+      rect.addEventListener("mousemove", function(e){ showTooltip(e, c.key + "<br><b>" + fmt(v) + "</b>"); });
+      rect.addEventListener("mouseleave", hideTooltip);
+      svg.appendChild(rect);
+
+      var valLbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+      valLbl.setAttribute("x", padL + barW + 8); valLbl.setAttribute("y", y + rowH/2 + 4);
+      valLbl.setAttribute("class","bar-label");
+      valLbl.textContent = fmt(v);
+      svg.appendChild(valLbl);
+    });
+  }
+
+  function showTooltip(e, html){
+    var tip = document.getElementById('tooltip');
+    tip.innerHTML = html;
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY + 14) + 'px';
+  }
+  function hideTooltip(){ document.getElementById('tooltip').style.display = 'none'; }
+
+  // ---------- detail list ----------
+  function renderDetail(){
+    var rows = filteredReceipts();
+    document.getElementById('resultCount').textContent = "(" + rows.length + " of " + STATE.receipts.length + " shown)";
+
+    var byMonth = {};
+    rows.forEach(function(r){
+      var mk = monthKey(r.date);
+      if (!byMonth[mk]) byMonth[mk] = [];
+      byMonth[mk].push(r);
+    });
+    var monthKeys = Object.keys(byMonth).sort().reverse();
+
+    var container = document.getElementById('monthGroups');
+    if (monthKeys.length === 0){
+      container.innerHTML = '<div class="empty-state">No receipts match the current filters.</div>';
+      return;
+    }
+
+    container.innerHTML = monthKeys.map(function(mk){
+      var list = byMonth[mk].sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+      var subtotal = list.reduce(function(s,r){ return s + amountOf(r); }, 0);
+      var collapsed = !!STATE.collapsedMonths[mk];
+      return '<div class="month-group">' +
+        '<div class="month-header'+(collapsed?' collapsed':'')+'" data-month="'+mk+'">' +
+          '<div><span class="caret">▼</span> <span class="title">'+monthLabel(mk)+'</span></div>' +
+          '<div class="meta">'+list.length+' receipt'+(list.length===1?'':'s')+' &middot; <b>'+fmt(subtotal)+'</b></div>' +
+        '</div>' +
+        '<div class="month-body'+(collapsed?' hidden':'')+'" data-month-body="'+mk+'">' +
+          list.map(renderReceiptCard).join("") +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    container.querySelectorAll('.month-header').forEach(function(el){
+      el.addEventListener('click', function(){
+        var mk = el.getAttribute('data-month');
+        STATE.collapsedMonths[mk] = !STATE.collapsedMonths[mk];
+        renderDetail();
+      });
+    });
+
+    container.querySelectorAll('[data-field]').forEach(function(el){
+      el.addEventListener('change', function(){
+        var id = parseInt(el.getAttribute('data-id'));
+        var field = el.getAttribute('data-field');
+        var r = STATE.receipts.find(function(x){ return x.id === id; });
+        if (!r) return;
+        r[field] = el.value;
+        if (field === 'type'){ renderAll(); } // type affects aggregates
+      });
+    });
+
+    container.querySelectorAll('[data-delete]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var id = parseInt(el.getAttribute('data-delete'));
+        STATE.receipts = STATE.receipts.filter(function(r){ return r.id !== id; });
+        renderAll();
+      });
+    });
+  }
+
+  function renderReceiptCard(r){
+    var amt = amountOf(r);
+    var color = resolveVar(catColor(r.type));
+    var typeOptions = CATEGORIES.map(function(c){
+      return '<option value="'+c.key+'"'+(c.key===r.type?' selected':'')+'>'+c.key+'</option>';
+    }).join("");
+    return '<div class="receipt-card">' +
+      '<div class="receipt-top">' +
+        '<div>' +
+          '<div class="receipt-vendor">'+r.vendor+'</div>' +
+          '<div class="receipt-sub">'+dateLabel(r.date)+' &middot; Receipt/Ref: '+(r.receiptNo||"—")+' &middot; '+(r.paymentMethod||"—")+'</div>' +
+          '<div class="type-pill"><span class="dot" style="background:'+color+'"></span>'+r.type+'</div>' +
+        '</div>' +
+        '<div class="receipt-amount">'+fmt(amt)+(r.gst?'<span class="gst">incl. GST '+fmt(r.gst)+'</span>':'')+'</div>' +
+      '</div>' +
+      '<div class="items-list">' + r.items.map(function(i){
+        return '<div><span>'+i.name+(i.qty>1?' &times;'+i.qty:'')+'</span><span>'+fmt(i.amount)+'</span></div>';
+      }).join("") + '</div>' +
+      '<div class="manual-fields">' +
+        '<div class="field"><label>Expense type</label><select data-field="type" data-id="'+r.id+'">'+typeOptions+'</select></div>' +
+        '<div class="field"><label>Receipts from</label><input type="text" data-field="receiptsFrom" data-id="'+r.id+'" value="'+escapeAttr(r.receiptsFrom)+'" placeholder="Employee / dept"></div>' +
+        '<div class="field"><label>Purpose (if any)</label><input type="text" data-field="purpose" data-id="'+r.id+'" value="'+escapeAttr(r.purpose)+'" placeholder="Reason for expense"></div>' +
+        '<div class="field"><label>Approved by</label><input type="text" data-field="approvedBy" data-id="'+r.id+'" value="'+escapeAttr(r.approvedBy)+'" placeholder="Approver name"></div>' +
+      '</div>' +
+      '<div class="receipt-actions"><button class="btn danger-text" data-delete="'+r.id+'">Remove receipt</button></div>' +
+    '</div>';
+  }
+  function escapeAttr(s){ return (s||"").replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+
+  // ---------- render orchestration ----------
+  function renderAll(){
+    populateFilters();
+    renderStats();
+    renderMonthChart();
+    renderTypeChart();
+    renderDetail();
+  }
+
+  // ---------- events: filters ----------
+  document.getElementById('filterMonth').addEventListener('change', function(e){ STATE.filters.month = e.target.value; renderAll(); });
+  document.getElementById('filterType').addEventListener('change', function(e){ STATE.filters.type = e.target.value; renderAll(); });
+  document.getElementById('searchBox').addEventListener('input', function(e){ STATE.filters.search = e.target.value; renderAll(); });
+  document.getElementById('clearFilters').addEventListener('click', function(){
+    STATE.filters = { month: "all", type: "all", search: "" };
+    document.getElementById('searchBox').value = "";
+    renderAll();
+  });
+
+  document.querySelectorAll('.table-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = btn.getAttribute('data-target');
+      if (target === 'monthChart'){
+        monthChartIsTable = !monthChartIsTable;
+        document.getElementById('monthChartWrap').style.display = monthChartIsTable ? 'none' : 'block';
+        document.getElementById('monthChartTable').style.display = monthChartIsTable ? 'block' : 'none';
+        btn.textContent = monthChartIsTable ? 'Chart view' : 'Table view';
+        renderMonthChart();
+      } else {
+        typeChartIsTable = !typeChartIsTable;
+        document.getElementById('typeChartWrap').style.display = typeChartIsTable ? 'none' : 'block';
+        document.getElementById('typeChartTable').style.display = typeChartIsTable ? 'block' : 'none';
+        btn.textContent = typeChartIsTable ? 'Chart view' : 'Table view';
+        renderTypeChart();
+      }
+    });
+  });
+
+  // ---------- theme toggle ----------
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    var root = document.documentElement;
+    var cur = root.getAttribute('data-theme');
+    root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    renderAll();
+  });
+
+  // ---------- export / import ----------
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var blob = new Blob([JSON.stringify(STATE.receipts, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'expense-tracker-data.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importBtn').addEventListener('click', function(){
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      try {
+        var data = JSON.parse(evt.target.result);
+        if (!Array.isArray(data)) throw new Error("Expected an array of receipts");
+        STATE.receipts = data;
+        nextId = Math.max.apply(null, data.map(function(r){ return r.id||0; }).concat([0])) + 1;
+        renderAll();
+      } catch(err){
+        alert("Could not import file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // ---------- add receipt modal ----------
+  var modalBackdrop = document.getElementById('modalBackdrop');
+  var mType = document.getElementById('mType');
+  mType.innerHTML = CATEGORIES.map(function(c){ return '<option value="'+c.key+'">'+c.key+'</option>'; }).join("");
+
+  function newItemRow(name, qty, amount){
+    var row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = '<input type="text" class="item-name" placeholder="Item description" value="'+escapeAttr(name||"")+'">' +
+      '<input type="number" class="item-qty" placeholder="Qty" min="1" value="'+(qty||1)+'">' +
+      '<input type="number" class="item-amount" placeholder="Amount" step="0.01" value="'+(amount!=null?amount:"")+'">' +
+      '<button type="button" class="remove-item">&times;</button>';
+    row.querySelector('.remove-item').addEventListener('click', function(){ row.remove(); updateModalTotal(); });
+    row.querySelectorAll('input').forEach(function(inp){ inp.addEventListener('input', updateModalTotal); });
+    return row;
+  }
+  function resetModal(){
+    document.getElementById('mDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('mVendor').value = "";
+    document.getElementById('mFrom').value = "";
+    document.getElementById('mPurpose').value = "";
+    document.getElementById('mApproved').value = "";
+    mType.value = CATEGORIES[0].key;
+    var itemRows = document.getElementById('itemRows');
+    itemRows.innerHTML = "";
+    itemRows.appendChild(newItemRow("", 1, null));
+    updateModalTotal();
+  }
+  function updateModalTotal(){
+    var total = 0;
+    document.querySelectorAll('#itemRows .item-row').forEach(function(row){
+      var amt = parseFloat(row.querySelector('.item-amount').value) || 0;
+      total += amt;
+    });
+    document.getElementById('modalTotal').textContent = "Total: " + fmt(total);
+  }
+  document.getElementById('addItemRow').addEventListener('click', function(){
+    document.getElementById('itemRows').appendChild(newItemRow("", 1, null));
+  });
+  document.getElementById('addReceiptBtn').addEventListener('click', function(){
+    resetModal();
+    modalBackdrop.classList.add('open');
+  });
+  document.getElementById('cancelModal').addEventListener('click', function(){
+    modalBackdrop.classList.remove('open');
+  });
+  modalBackdrop.addEventListener('click', function(e){
+    if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
+  });
+  document.getElementById('saveModal').addEventListener('click', function(){
+    var date = document.getElementById('mDate').value;
+    var vendor = document.getElementById('mVendor').value.trim();
+    if (!date || !vendor){ alert("Please fill in at least a date and vendor."); return; }
+    var items = [];
+    document.querySelectorAll('#itemRows .item-row').forEach(function(row){
+      var name = row.querySelector('.item-name').value.trim();
+      var qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+      var amount = parseFloat(row.querySelector('.item-amount').value) || 0;
+      if (name || amount) items.push({ name: name || "Item", qty: qty, amount: amount });
+    });
+    if (items.length === 0) items.push({ name: "Expense", qty: 1, amount: 0 });
+    var r = {
+      id: nextId++,
+      date: date,
+      vendor: vendor,
+      receiptNo: "",
+      type: mType.value,
+      paymentMethod: "",
+      gst: 0,
+      items: items,
+      receiptsFrom: document.getElementById('mFrom').value.trim(),
+      purpose: document.getElementById('mPurpose').value.trim(),
+      approvedBy: document.getElementById('mApproved').value.trim()
+    };
+    STATE.receipts.push(r);
+    modalBackdrop.classList.remove('open');
+    renderAll();
+  });
+
+  window.addEventListener('resize', function(){ renderMonthChart(); renderTypeChart(); });
+
+  renderAll();
+})();
 </script>
 </body>
 </html>
