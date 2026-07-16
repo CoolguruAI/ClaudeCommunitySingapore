@@ -4,20 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude SG Community Expense Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&display=swap" rel="stylesheet">
 <style>
+  /* ---- Design tokens, adapted from claudecode.sg: warm cream + near-black
+     sections with a coral-orange accent, pill buttons, bold tight headings,
+     small tracked uppercase eyebrows over dark rounded cards. ---- */
   :root {
     color-scheme: light;
   }
   .viz-root {
-    --surface-1:      #fcfcfb;
-    --page-plane:     #f9f9f7;
-    --text-primary:   #0b0b0b;
-    --text-secondary: #52514e;
-    --text-muted:     #898781;
-    --gridline:       #e1e0d9;
-    --baseline:       #c3c2b7;
-    --border:         rgba(11,11,11,0.10);
-    --success:        #006300;
+    --cream:          #f4efe4;
+    --cream-hi:       #fbf8f0;
+    --surface-1:      #ffffff;
+    --page-plane:     #f4efe4;
+    --text-primary:   #171410;
+    --text-secondary: #6b675d;
+    --text-muted:     #9a9587;
+    --gridline:       #e4ded0;
+    --baseline:       #d3ccbb;
+    --border:         rgba(23,20,16,0.12);
+    --success:        #1a7a1a;
+
+    --stat-surface:   #17140f;
+    --stat-surface-2: #211d17;
+    --stat-ink:       #f7f3ea;
+    --stat-ink-soft:  #b6b0a1;
+    --stat-border:    rgba(247,243,234,0.10);
+
+    --accent:         #dd5a2b;
+    --accent-ink:     #fff8f2;
+    --accent-hover:   #c74e23;
 
     --cat-1: #2a78d6; /* Meals & Entertainment */
     --cat-2: #008300; /* Electronics & Equipment */
@@ -27,26 +45,32 @@
     --cat-6: #eb6834; /* Accommodation */
     --cat-7: #4a3aa7; /* Client & Marketing */
     --cat-8: #e34948; /* Other */
-
-    --seq-400: #3987e5;
-    --seq-450: #2a78d6;
-    --seq-500: #256abf;
   }
   @media (prefers-color-scheme: dark) {
     :root:where(:not([data-theme="light"])) .viz-root {
       color-scheme: dark;
-      --surface-1:      #1a1a19;
-      --page-plane:     #0d0d0d;
-      --text-primary:   #ffffff;
-      --text-secondary: #c3c2b7;
-      --text-muted:     #898781;
-      --gridline:       #2c2c2a;
-      --baseline:       #383835;
-      --border:         rgba(255,255,255,0.10);
-      --success:        #0ca30c;
+      --surface-1:      #1c1a17;
+      --page-plane:     #14120f;
+      --text-primary:   #f7f3ea;
+      --text-secondary: #c3bcac;
+      --text-muted:     #8f8a7c;
+      --gridline:       #322d24;
+      --baseline:       #45402f;
+      --border:         rgba(247,243,234,0.12);
+      --success:        #37b34a;
+
+      --stat-surface:   #221e18;
+      --stat-surface-2: #2a251d;
+      --stat-ink:       #f7f3ea;
+      --stat-ink-soft:  #b6b0a1;
+      --stat-border:    rgba(247,243,234,0.10);
+
+      --accent:         #ec6a38;
+      --accent-ink:     #1a1510;
+      --accent-hover:   #f47c4d;
 
       --cat-1: #3987e5;
-      --cat-2: #008300;
+      --cat-2: #23a123;
       --cat-3: #d55181;
       --cat-4: #c98500;
       --cat-5: #199e70;
@@ -57,18 +81,28 @@
   }
   :root[data-theme="dark"] .viz-root {
     color-scheme: dark;
-    --surface-1:      #1a1a19;
-    --page-plane:     #0d0d0d;
-    --text-primary:   #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted:     #898781;
-    --gridline:       #2c2c2a;
-    --baseline:       #383835;
-    --border:         rgba(255,255,255,0.10);
-    --success:        #0ca30c;
+    --surface-1:      #1c1a17;
+    --page-plane:     #14120f;
+    --text-primary:   #f7f3ea;
+    --text-secondary: #c3bcac;
+    --text-muted:     #8f8a7c;
+    --gridline:       #322d24;
+    --baseline:       #45402f;
+    --border:         rgba(247,243,234,0.12);
+    --success:        #37b34a;
+
+    --stat-surface:   #221e18;
+    --stat-surface-2: #2a251d;
+    --stat-ink:       #f7f3ea;
+    --stat-ink-soft:  #b6b0a1;
+    --stat-border:    rgba(247,243,234,0.10);
+
+    --accent:         #ec6a38;
+    --accent-ink:     #1a1510;
+    --accent-hover:   #f47c4d;
 
     --cat-1: #3987e5;
-    --cat-2: #008300;
+    --cat-2: #23a123;
     --cat-3: #d55181;
     --cat-4: #c98500;
     --cat-5: #199e70;
@@ -80,185 +114,247 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: 'Manrope', system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  /* Theme variables are scoped to .viz-root, so the page-filling background
+     must be painted on .viz-root itself (a custom property set on a
+     descendant is never visible to an ancestor's var() lookup). */
+  .viz-root {
+    min-height: 100vh; padding-bottom: 70px;
     background: var(--page-plane);
     color: var(--text-primary);
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .viz-root { min-height: 100vh; padding-bottom: 60px; }
+
+  .eyebrow {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
 
   .app-header {
-    padding: 24px 28px 16px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: 34px 32px 22px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;
   }
-  .app-header h1 { font-size: 22px; margin: 0 0 4px; }
-  .app-header p { margin: 0; color: var(--text-secondary); font-size: 13px; }
-  .theme-toggle {
-    border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
-    border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+  .header-left { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+  /* Community wordmark, reconstructed in type (matching the "Claude SG /
+     community" lockup) since no source image file was retrievable. */
+  .logo-badge {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #d97c5b; border-radius: 14px; padding: 10px 20px 12px;
+    box-shadow: 0 1px 2px rgba(23,20,16,0.12);
+    flex-shrink: 0;
+  }
+  .logo-badge .word {
+    font-family: 'Playfair Display', Georgia, serif; font-size: 26px; line-height: 1; white-space: nowrap;
+  }
+  .logo-badge .word .claude { color: #f3ece0; font-weight: 500; }
+  .logo-badge .word .sg { color: #2a1d13; font-weight: 800; margin-left: 2px; }
+  .logo-badge .sub {
+    font-family: 'Playfair Display', Georgia, serif; font-size: 12px; color: #f3ece0; font-weight: 500;
+    letter-spacing: 0.34em; margin-top: 3px; margin-left: 0.34em;
   }
 
-  .toolbar {
-    margin: 0 28px 20px; padding: 14px 16px; background: var(--surface-1);
-    border: 1px solid var(--border); border-radius: 12px;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  .app-header .lockup { line-height: 1; }
+  .app-header .brand-name { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+  .app-header .brand-sub {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    margin: 6px 0 0;
   }
-  .toolbar label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px; }
+  .app-header p.tagline { margin: 10px 0 0; color: var(--text-secondary); font-size: 13px; max-width: 520px; }
+  .theme-toggle {
+    border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+    border-radius: 999px; padding: 9px 16px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .toolbar {
+    margin: 0 32px 26px; padding: 18px 20px; background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 20px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+  }
+  .toolbar label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px; }
   .toolbar select, .toolbar input[type="text"] {
-    padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border);
+    padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
     background: var(--page-plane); color: var(--text-primary); font-size: 13px; min-width: 150px;
+    font-family: inherit;
   }
   .toolbar .field { display:flex; flex-direction: column; }
   .toolbar .spacer { flex: 1; }
   .btn {
     border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary);
-    border-radius: 7px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-weight: 500;
+    border-radius: 999px; padding: 9px 18px; font-size: 13px; cursor: pointer; font-weight: 700;
+    font-family: inherit; transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
   }
-  .btn:hover { filter: brightness(0.97); }
-  .btn.primary { background: var(--cat-1); color: white; border-color: var(--cat-1); }
-  .btn.danger-text { color: var(--cat-8); border: none; background: none; padding: 4px 8px; font-size: 12px; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-ink); }
+  .btn.danger-text { color: var(--cat-8); border: none; background: none; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+  .btn.danger-text:hover { color: var(--cat-8); text-decoration: underline; }
   #importFile { display: none; }
 
-  .section { margin: 0 28px 28px; }
-  .section-title { font-size: 15px; font-weight: 600; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-  .section-title .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+  .section { margin: 0 32px 34px; }
+  .section-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .section-title .hint { font-weight: 500; color: var(--text-muted); font-size: 12px; letter-spacing: 0; text-transform: none; }
+  .section-head { margin-bottom: 18px; }
 
-  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
   .stat-tile {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    background: var(--stat-surface); border: 1px solid var(--stat-border); border-radius: 18px; padding: 20px 20px;
+    color: var(--stat-ink);
   }
-  .stat-tile .label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .stat-tile .value { font-size: 24px; font-weight: 600; }
-  .stat-tile .sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-  .stat-tile .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
+  .stat-tile .label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stat-ink-soft); margin-bottom: 10px; }
+  .stat-tile .value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--stat-ink); }
+  .stat-tile .sub { font-size: 12px; color: var(--stat-ink-soft); margin-top: 6px; }
+  .stat-tile .swatch { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:7px; }
 
   .chart-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; align-items: start; }
   @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(2,1fr); } }
 
   .card {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px; padding: 18px 20px;
   }
-  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .card-head h3 { font-size: 13px; margin: 0; font-weight: 600; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-head h3 { font-size: 13px; margin: 0; font-weight: 700; letter-spacing: 0.01em; }
   .table-toggle {
-    font-size: 11px; color: var(--text-secondary); background: none; border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 8px; cursor: pointer;
+    font-size: 11px; font-weight: 700; color: var(--text-secondary); background: none; border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 11px; cursor: pointer; font-family: inherit;
   }
+  .table-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
   svg { overflow: visible; }
-  svg text { fill: var(--text-secondary); font-size: 11px; font-family: system-ui, -apple-system, sans-serif; }
+  svg text { fill: var(--text-secondary); font-size: 11px; font-family: 'Manrope', system-ui, sans-serif; }
   .axis-line { stroke: var(--baseline); stroke-width: 1; }
   .grid-line { stroke: var(--gridline); stroke-width: 1; }
   .bar-seg { cursor: pointer; }
-  .bar-label { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+  .bar-label { fill: var(--text-primary); font-size: 11px; font-weight: 700; }
 
-  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 10px; font-size: 12px; color: var(--text-secondary); }
-  .legend-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 12px; font-size: 12px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
   .legend-item.muted { opacity: 0.35; }
-  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
   .tooltip {
-    position: fixed; pointer-events: none; background: var(--text-primary); color: var(--surface-1);
-    font-size: 12px; padding: 6px 10px; border-radius: 6px; z-index: 50; display: none; max-width: 240px;
-    line-height: 1.4;
+    position: fixed; pointer-events: none; background: var(--stat-surface); color: var(--stat-ink);
+    font-size: 12px; padding: 8px 12px; border-radius: 10px; z-index: 50; display: none; max-width: 240px;
+    line-height: 1.4; border: 1px solid var(--stat-border);
   }
 
   table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  table.data-table th, table.data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gridline); }
-  table.data-table th { color: var(--text-muted); font-weight: 500; }
+  table.data-table th, table.data-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--gridline); }
+  table.data-table th { color: var(--text-muted); font-weight: 700; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; }
 
-  .month-group { margin-bottom: 18px; }
+  .month-group { margin-bottom: 20px; }
   .month-header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 10px 14px; background: var(--surface-1); border: 1px solid var(--border);
-    border-radius: 10px; cursor: pointer; user-select: none;
+    padding: 14px 18px; background: var(--stat-surface); border: 1px solid var(--stat-border);
+    border-radius: 16px; cursor: pointer; user-select: none; color: var(--stat-ink);
   }
-  .month-header .title { font-size: 14px; font-weight: 600; }
-  .month-header .meta { font-size: 12px; color: var(--text-secondary); }
-  .month-header .caret { transition: transform 0.15s; color: var(--text-muted); }
+  .month-header .title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .month-header .meta { font-size: 12px; color: var(--stat-ink-soft); font-weight: 600; }
+  .month-header .meta b { color: var(--stat-ink); font-weight: 800; }
+  .month-header .caret { transition: transform 0.15s; color: var(--accent); }
   .month-header.collapsed .caret { transform: rotate(-90deg); }
-  .month-body { margin-top: 10px; display: grid; gap: 10px; }
+  .month-body { margin-top: 12px; display: grid; gap: 12px; }
   .month-body.hidden { display: none; }
 
   .receipt-card {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px;
   }
   .receipt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-  .receipt-vendor { font-size: 14px; font-weight: 600; }
-  .receipt-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .receipt-vendor { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .receipt-sub { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
   .type-pill {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 9px; border-radius: 999px;
-    background: var(--page-plane); border: 1px solid var(--border); color: var(--text-secondary); margin-top: 6px;
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 999px;
+    background: var(--page-plane); border: 1px solid var(--border); color: var(--text-secondary); margin-top: 8px;
   }
   .type-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
-  .receipt-amount { font-size: 18px; font-weight: 700; white-space: nowrap; }
-  .receipt-amount .gst { font-size: 11px; font-weight: 400; color: var(--text-muted); display:block; text-align: right;}
+  .receipt-amount { font-size: 19px; font-weight: 800; white-space: nowrap; letter-spacing: -0.01em; }
+  .receipt-amount .gst { font-size: 11px; font-weight: 500; color: var(--text-muted); display:block; text-align: right;}
 
-  .items-list { margin: 10px 0; font-size: 12px; color: var(--text-secondary); }
-  .items-list div { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--gridline); }
+  .items-list { margin: 12px 0; font-size: 12px; color: var(--text-secondary); }
+  .items-list div { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed var(--gridline); }
   .items-list div:last-child { border-bottom: none; }
 
-  .manual-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
-  .manual-fields .field label { font-size: 10px; color: var(--text-muted); display:block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .manual-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .manual-fields .field label { font-size: 10px; font-weight: 700; color: var(--text-muted); display:block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
   .manual-fields input, .manual-fields select {
-    width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border);
-    background: var(--page-plane); color: var(--text-primary); font-size: 12px;
+    width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--page-plane); color: var(--text-primary); font-size: 12px; font-family: inherit;
   }
-  .receipt-actions { display: flex; justify-content: flex-end; margin-top: 8px; gap: 6px; }
+  .receipt-actions { display: flex; justify-content: flex-end; margin-top: 10px; gap: 6px; }
 
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
 
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+    position: fixed; inset: 0; background: rgba(23,20,16,0.55); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
   }
   .modal-backdrop.open { display: flex; }
   .modal {
-    background: var(--surface-1); border-radius: 14px; padding: 22px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+    background: var(--surface-1); border-radius: 22px; padding: 26px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
     border: 1px solid var(--border);
   }
-  .modal h2 { font-size: 16px; margin: 0 0 14px; }
-  .modal .field { margin-bottom: 12px; }
-  .modal label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
-  .modal input, .modal select { width: 100%; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary); font-size: 13px; }
+  .modal h2 { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px; }
+  .modal .field { margin-bottom: 13px; }
+  .modal label { font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .modal input, .modal select { width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary); font-size: 13px; font-family: inherit; }
   .modal .item-row { display: grid; grid-template-columns: 2fr 0.6fr 0.8fr auto; gap: 8px; margin-bottom: 6px; align-items: center; }
-  .modal .item-row input { font-size: 12px; padding: 6px 8px; }
-  .modal .remove-item { background: none; border: none; color: var(--cat-8); cursor: pointer; font-size: 16px; padding: 0 4px; }
-  .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 10px; }
-  .modal-total { font-size: 13px; color: var(--text-secondary); }
+  .modal .item-row input { font-size: 12px; padding: 7px 9px; }
+  .modal .remove-item { background: none; border: none; color: var(--cat-8); cursor: pointer; font-size: 17px; padding: 0 4px; }
+  .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; }
+  .modal-total { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
 </style>
 </head>
 <body>
 <div class="viz-root" id="vizRoot">
 
   <div class="app-header">
-    <div>
-      <h1>Claude SG Community Expense Tracker</h1>
-      <p>Use the dashboard for reporting and to query by type or month</p>
+    <div class="header-left">
+      <div class="logo-badge" role="img" aria-label="Claude SG Community logo">
+        <span class="word"><span class="claude">Claude</span><span class="sg">SG</span></span>
+        <span class="sub">community</span>
+      </div>
+      <div class="lockup">
+        <p class="brand-name">Claude SG Community Expense Tracker</p>
+        <p class="brand-sub">Build the Future, Together</p>
+        <p class="tagline">Use the dashboard for reporting and to query by type or month</p>
+      </div>
     </div>
     <button class="theme-toggle" id="themeToggle">Toggle dark mode</button>
   </div>
 
-  <div class="toolbar">
-    <div class="field">
-      <label for="filterMonth">Month</label>
-      <select id="filterMonth"><option value="all">All months</option></select>
+  <div class="section">
+    <div class="section-head">
+      <span class="eyebrow">Query &amp; filter</span>
     </div>
-    <div class="field">
-      <label for="filterType">Expense type</label>
-      <select id="filterType"><option value="all">All types</option></select>
+    <div class="toolbar">
+      <div class="field">
+        <label for="filterMonth">Month</label>
+        <select id="filterMonth"><option value="all">All months</option></select>
+      </div>
+      <div class="field">
+        <label for="filterType">Expense type</label>
+        <select id="filterType"><option value="all">All types</option></select>
+      </div>
+      <div class="field">
+        <label for="searchBox">Search</label>
+        <input type="text" id="searchBox" placeholder="Vendor, item, purpose...">
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="clearFilters">Clear filters</button>
+      <button class="btn" id="exportBtn">Export JSON</button>
+      <button class="btn" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" accept="application/json">
+      <button class="btn primary" id="addReceiptBtn">+ Add receipt &rarr;</button>
     </div>
-    <div class="field">
-      <label for="searchBox">Search</label>
-      <input type="text" id="searchBox" placeholder="Vendor, item, purpose...">
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" id="clearFilters">Clear filters</button>
-    <button class="btn" id="exportBtn">Export JSON</button>
-    <button class="btn" id="importBtn">Import JSON</button>
-    <input type="file" id="importFile" accept="application/json">
-    <button class="btn primary" id="addReceiptBtn">+ Add receipt</button>
   </div>
 
   <div class="section">
+    <div class="section-head">
+      <span class="eyebrow">Dashboard</span>
+      <div class="section-title">Spend overview</div>
+    </div>
     <div class="stat-row" id="statRow"></div>
     <div class="chart-grid">
       <div class="card">
@@ -282,7 +378,10 @@
   </div>
 
   <div class="section">
-    <div class="section-title">Receipt detail <span class="hint" id="resultCount"></span></div>
+    <div class="section-head">
+      <span class="eyebrow">Detail</span>
+      <div class="section-title">Receipt detail <span class="hint" id="resultCount"></span></div>
+    </div>
     <div id="monthGroups"></div>
   </div>
 
@@ -290,6 +389,7 @@
 
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
+      <span class="eyebrow">New entry</span>
       <h2>Add a receipt</h2>
       <div class="field">
         <label>Date</label>
@@ -324,7 +424,7 @@
         <div class="modal-total" id="modalTotal">Total: $0.00</div>
         <div>
           <button class="btn" id="cancelModal" type="button">Cancel</button>
-          <button class="btn primary" id="saveModal" type="button">Save receipt</button>
+          <button class="btn primary" id="saveModal" type="button">Save receipt &rarr;</button>
         </div>
       </div>
     </div>
