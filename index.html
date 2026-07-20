@@ -262,6 +262,7 @@
   .receipt-card {
     background: var(--surface-1); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px;
   }
+  .receipt-card.revenue-card { border-color: rgba(26,122,26,0.35); }
   .receipt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
   .receipt-vendor { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
   .receipt-sub { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
@@ -269,9 +270,12 @@
     display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 999px;
     background: var(--page-plane); border: 1px solid var(--border); color: var(--text-secondary); margin-top: 8px;
   }
+  .type-pill.revenue { color: var(--success); border-color: var(--success); }
   .type-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
   .receipt-amount { font-size: 19px; font-weight: 800; white-space: nowrap; letter-spacing: -0.01em; }
+  .receipt-amount.revenue { color: var(--success); }
   .receipt-amount .gst { font-size: 11px; font-weight: 500; color: var(--text-muted); display:block; text-align: right;}
+  .revenue-amt { color: var(--success); }
 
   .items-list { margin: 12px 0; font-size: 12px; color: var(--text-secondary); }
   .items-list div { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed var(--gridline); }
@@ -297,6 +301,13 @@
   }
   .modal h2 { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px; }
   .modal .field { margin-bottom: 13px; }
+  .kind-toggle { display: flex; gap: 8px; }
+  .kind-btn {
+    flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--page-plane);
+    color: var(--text-secondary); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .kind-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .kind-btn[data-kind="revenue"].active { background: var(--success); border-color: var(--success); color: #fff; }
   .modal label { font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
   .modal input, .modal select { width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border); background: var(--page-plane); color: var(--text-primary); font-size: 13px; font-family: inherit; }
   .modal .item-row { display: grid; grid-template-columns: 2fr 0.6fr 0.8fr auto; gap: 8px; margin-bottom: 6px; align-items: center; }
@@ -317,7 +328,7 @@
       </div>
       <div class="lockup">
         <p class="brand-name">Claude SG Community Expense Tracker</p>
-        <p class="brand-sub">Build the Future, Together</p>
+        <p class="brand-sub">BUILD THE FUTURE, TOGETHER</p>
         <p class="tagline">Use the dashboard for reporting and to query by type or month</p>
       </div>
     </div>
@@ -390,26 +401,33 @@
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
       <span class="eyebrow">New entry</span>
-      <h2>Add a receipt</h2>
+      <h2 id="modalTitle">Add a receipt</h2>
+      <div class="field">
+        <label>Entry type</label>
+        <div class="kind-toggle" id="kindToggle">
+          <button type="button" class="kind-btn active" data-kind="expense">Expense</button>
+          <button type="button" class="kind-btn" data-kind="revenue">Revenue</button>
+        </div>
+      </div>
       <div class="field">
         <label>Date</label>
         <input type="date" id="mDate">
       </div>
       <div class="field">
-        <label>Vendor / merchant</label>
+        <label id="mVendorLabel">Vendor / merchant</label>
         <input type="text" id="mVendor" placeholder="e.g. Grab, Starbucks...">
       </div>
-      <div class="field">
+      <div class="field" id="mTypeField">
         <label>Expense type</label>
         <select id="mType"></select>
       </div>
       <div class="field">
-        <label>Line items</label>
+        <label id="itemsLabel">Line items</label>
         <div id="itemRows"></div>
         <button class="btn" id="addItemRow" type="button" style="margin-top:4px;">+ Add line item</button>
       </div>
       <div class="field">
-        <label>Receipts from</label>
+        <label id="mFromLabel">Receipts from</label>
         <input type="text" id="mFrom" placeholder="e.g. Employee name / department">
       </div>
       <div class="field">
@@ -447,6 +465,7 @@
   ];
 
   function catColor(type){
+    if (type === "Revenue") return "var(--success)";
     var c = CATEGORIES.find(function(c){ return c.key === type; });
     return c ? c.color : "var(--cat-8)";
   }
@@ -454,6 +473,7 @@
     var name = varExpr.replace("var(","").replace(")","");
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || getComputedStyle(document.getElementById('vizRoot')).getPropertyValue(name).trim();
   }
+  function isRevenue(r){ return r.kind === "revenue"; }
 
   var STATE = {
     receipts: [
@@ -504,13 +524,21 @@
           { name: "ATH Ayataka JGT 1.5L (after discount)", qty: 1, amount: 2.15 }
         ],
         receiptsFrom: "", purpose: "", approvedBy: ""
+      },
+      {
+        id: 5, date: "2026-07-11", vendor: "AI Capitol — Training Partnership", receiptNo: "",
+        kind: "revenue", type: "Revenue", paymentMethod: "", gst: 0,
+        items: [
+          { name: "Revenue share — \"Claude for Finance\" training (Lionel Sim, AI Capitol)", qty: 1, amount: 1500.00 }
+        ],
+        receiptsFrom: "Lionel Sim (AI Capitol)", purpose: "Revenue share from \"Claude for Finance\" training, Sat 11 Jul 2026", approvedBy: ""
       }
     ],
     filters: { month: "all", type: "all", search: "" },
     collapsedMonths: {}
   };
 
-  var nextId = 5;
+  var nextId = 6;
   function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
   function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
@@ -547,27 +575,31 @@
     }).join("");
     monthSel.value = STATE.filters.month;
 
-    typeSel.innerHTML = '<option value="all">All types</option>' + CATEGORIES.map(function(c){
-      return '<option value="'+c.key+'">'+c.key+'</option>';
-    }).join("");
+    typeSel.innerHTML = '<option value="all">All types</option>' +
+      '<optgroup label="Expense types">' + CATEGORIES.map(function(c){
+        return '<option value="'+c.key+'">'+c.key+'</option>';
+      }).join("") + '</optgroup>' +
+      '<optgroup label="Income"><option value="Revenue">Revenue</option></optgroup>';
     typeSel.value = STATE.filters.type;
   }
 
   // ---------- stat tiles ----------
   function renderStats(){
     var rows = filteredReceipts();
-    var total = rows.reduce(function(s,r){ return s + amountOf(r); }, 0);
-    var count = rows.length;
-    var avg = count ? total / count : 0;
+    var expenseRows = rows.filter(function(r){ return !isRevenue(r); });
+    var revenueRows = rows.filter(isRevenue);
+    var totalExpense = expenseRows.reduce(function(s,r){ return s + amountOf(r); }, 0);
+    var totalRevenue = revenueRows.reduce(function(s,r){ return s + amountOf(r); }, 0);
+    var net = totalRevenue - totalExpense;
     var byType = {};
-    rows.forEach(function(r){ byType[r.type] = (byType[r.type]||0) + amountOf(r); });
+    expenseRows.forEach(function(r){ byType[r.type] = (byType[r.type]||0) + amountOf(r); });
     var topType = Object.keys(byType).sort(function(a,b){ return byType[b]-byType[a]; })[0];
 
     var html = "";
-    html += statTile("Total spend", fmt(total), rows.length + " receipt" + (rows.length===1?"":"s"));
-    html += statTile("Receipts", String(count), "matching current filters");
-    html += statTile("Average per receipt", fmt(avg), "");
-    html += statTile("Top category", topType ? topType : "—", topType ? fmt(byType[topType]) : "", topType ? catColor(topType) : null);
+    html += statTile("Total expenses", fmt(totalExpense), expenseRows.length + " expense" + (expenseRows.length===1?"":"s"));
+    html += statTile("Total revenue", fmt(totalRevenue), revenueRows.length + (revenueRows.length===1?" entry":" entries"), revenueRows.length ? "var(--success)" : null);
+    html += statTile("Net", (net>=0?"+":"−") + fmt(Math.abs(net)), net>=0 ? "revenue exceeds expenses" : "expenses exceed revenue", net>=0 ? "var(--success)" : "var(--cat-8)");
+    html += statTile("Top expense category", topType ? topType : "—", topType ? fmt(byType[topType]) : "", topType ? catColor(topType) : null);
     document.getElementById('statRow').innerHTML = html;
   }
   function statTile(label, value, sub, color){
@@ -592,7 +624,7 @@
   }
 
   function renderMonthChart(){
-    var rows = filteredReceipts();
+    var rows = filteredReceipts().filter(function(r){ return !isRevenue(r); });
     var agg = aggregateByMonthAndType(rows);
     var svg = document.getElementById('monthChart');
     var wrap = document.getElementById('monthChartWrap');
@@ -713,7 +745,7 @@
   }
 
   function renderTypeChart(){
-    var rows = filteredReceipts();
+    var rows = filteredReceipts().filter(function(r){ return !isRevenue(r); });
     var svg = document.getElementById('typeChart');
     var wrap = document.getElementById('typeChartWrap');
     var W = wrap.clientWidth || 380, H = 260;
@@ -799,12 +831,17 @@
 
     container.innerHTML = monthKeys.map(function(mk){
       var list = byMonth[mk].sort(function(a,b){ return a.date < b.date ? 1 : -1; });
-      var subtotal = list.reduce(function(s,r){ return s + amountOf(r); }, 0);
+      var expenseSubtotal = list.filter(function(r){ return !isRevenue(r); }).reduce(function(s,r){ return s + amountOf(r); }, 0);
+      var revenueSubtotal = list.filter(isRevenue).reduce(function(s,r){ return s + amountOf(r); }, 0);
+      var amountParts = [];
+      if (expenseSubtotal) amountParts.push('<b>'+fmt(expenseSubtotal)+'</b> expenses');
+      if (revenueSubtotal) amountParts.push('<b class="revenue-amt">+'+fmt(revenueSubtotal)+'</b> revenue');
+      var amountLabel = amountParts.length ? amountParts.join(' &middot; ') : '<b>'+fmt(0)+'</b>';
       var collapsed = !!STATE.collapsedMonths[mk];
       return '<div class="month-group">' +
         '<div class="month-header'+(collapsed?' collapsed':'')+'" data-month="'+mk+'">' +
           '<div><span class="caret">▼</span> <span class="title">'+monthLabel(mk)+'</span></div>' +
-          '<div class="meta">'+list.length+' receipt'+(list.length===1?'':'s')+' &middot; <b>'+fmt(subtotal)+'</b></div>' +
+          '<div class="meta">'+list.length+' receipt'+(list.length===1?'':'s')+' &middot; '+amountLabel+'</div>' +
         '</div>' +
         '<div class="month-body'+(collapsed?' hidden':'')+'" data-month-body="'+mk+'">' +
           list.map(renderReceiptCard).join("") +
@@ -842,29 +879,33 @@
 
   function renderReceiptCard(r){
     var amt = amountOf(r);
+    var revenue = isRevenue(r);
     var color = resolveVar(catColor(r.type));
     var typeOptions = CATEGORIES.map(function(c){
       return '<option value="'+c.key+'"'+(c.key===r.type?' selected':'')+'>'+c.key+'</option>';
     }).join("");
-    return '<div class="receipt-card">' +
+    var typeField = revenue
+      ? ''
+      : '<div class="field"><label>Expense type</label><select data-field="type" data-id="'+r.id+'">'+typeOptions+'</select></div>';
+    return '<div class="receipt-card'+(revenue?' revenue-card':'')+'">' +
       '<div class="receipt-top">' +
         '<div>' +
           '<div class="receipt-vendor">'+r.vendor+'</div>' +
-          '<div class="receipt-sub">'+dateLabel(r.date)+' &middot; Receipt/Ref: '+(r.receiptNo||"—")+' &middot; '+(r.paymentMethod||"—")+'</div>' +
-          '<div class="type-pill"><span class="dot" style="background:'+color+'"></span>'+r.type+'</div>' +
+          '<div class="receipt-sub">'+dateLabel(r.date)+(r.receiptNo?' &middot; Receipt/Ref: '+r.receiptNo:'')+(r.paymentMethod?' &middot; '+r.paymentMethod:'')+'</div>' +
+          '<div class="type-pill'+(revenue?' revenue':'')+'"><span class="dot" style="background:'+color+'"></span>'+(revenue?'Revenue':r.type)+'</div>' +
         '</div>' +
-        '<div class="receipt-amount">'+fmt(amt)+(r.gst?'<span class="gst">incl. GST '+fmt(r.gst)+'</span>':'')+'</div>' +
+        '<div class="receipt-amount'+(revenue?' revenue':'')+'">'+(revenue?'+':'')+fmt(amt)+(r.gst?'<span class="gst">incl. GST '+fmt(r.gst)+'</span>':'')+'</div>' +
       '</div>' +
       '<div class="items-list">' + r.items.map(function(i){
         return '<div><span>'+i.name+(i.qty>1?' &times;'+i.qty:'')+'</span><span>'+fmt(i.amount)+'</span></div>';
       }).join("") + '</div>' +
       '<div class="manual-fields">' +
-        '<div class="field"><label>Expense type</label><select data-field="type" data-id="'+r.id+'">'+typeOptions+'</select></div>' +
-        '<div class="field"><label>Receipts from</label><input type="text" data-field="receiptsFrom" data-id="'+r.id+'" value="'+escapeAttr(r.receiptsFrom)+'" placeholder="Employee / dept"></div>' +
+        typeField +
+        '<div class="field"><label>'+(revenue?'Received from':'Receipts from')+'</label><input type="text" data-field="receiptsFrom" data-id="'+r.id+'" value="'+escapeAttr(r.receiptsFrom)+'" placeholder="Employee / dept"></div>' +
         '<div class="field"><label>Purpose (if any)</label><input type="text" data-field="purpose" data-id="'+r.id+'" value="'+escapeAttr(r.purpose)+'" placeholder="Reason for expense"></div>' +
         '<div class="field"><label>Approved by</label><input type="text" data-field="approvedBy" data-id="'+r.id+'" value="'+escapeAttr(r.approvedBy)+'" placeholder="Approver name"></div>' +
       '</div>' +
-      '<div class="receipt-actions"><button class="btn danger-text" data-delete="'+r.id+'">Remove receipt</button></div>' +
+      '<div class="receipt-actions"><button class="btn danger-text" data-delete="'+r.id+'">Remove '+(revenue?'entry':'receipt')+'</button></div>' +
     '</div>';
   }
   function escapeAttr(s){ return (s||"").replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
@@ -951,6 +992,26 @@
   var mType = document.getElementById('mType');
   mType.innerHTML = CATEGORIES.map(function(c){ return '<option value="'+c.key+'">'+c.key+'</option>'; }).join("");
 
+  var modalKind = "expense";
+  function setModalKind(kind){
+    modalKind = kind;
+    document.querySelectorAll('.kind-btn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-kind') === kind);
+    });
+    var revenue = kind === "revenue";
+    document.getElementById('mTypeField').style.display = revenue ? 'none' : '';
+    document.getElementById('modalTitle').textContent = revenue ? 'Add revenue' : 'Add a receipt';
+    document.getElementById('mVendorLabel').textContent = revenue ? 'Revenue source' : 'Vendor / merchant';
+    document.getElementById('mVendor').placeholder = revenue ? 'e.g. Training partnership, sponsorship...' : 'e.g. Grab, Starbucks...';
+    document.getElementById('itemsLabel').textContent = revenue ? 'Revenue line items' : 'Line items';
+    document.getElementById('mFromLabel').textContent = revenue ? 'Received from' : 'Receipts from';
+    document.getElementById('saveModal').textContent = (revenue ? 'Save revenue' : 'Save receipt') + ' →';
+  }
+  document.getElementById('kindToggle').addEventListener('click', function(e){
+    var btn = e.target.closest('.kind-btn');
+    if (btn) setModalKind(btn.getAttribute('data-kind'));
+  });
+
   function newItemRow(name, qty, amount){
     var row = document.createElement('div');
     row.className = 'item-row';
@@ -969,6 +1030,7 @@
     document.getElementById('mPurpose').value = "";
     document.getElementById('mApproved').value = "";
     mType.value = CATEGORIES[0].key;
+    setModalKind("expense");
     var itemRows = document.getElementById('itemRows');
     itemRows.innerHTML = "";
     itemRows.appendChild(newItemRow("", 1, null));
@@ -1006,13 +1068,14 @@
       var amount = parseFloat(row.querySelector('.item-amount').value) || 0;
       if (name || amount) items.push({ name: name || "Item", qty: qty, amount: amount });
     });
-    if (items.length === 0) items.push({ name: "Expense", qty: 1, amount: 0 });
+    if (items.length === 0) items.push({ name: modalKind === "revenue" ? "Revenue" : "Expense", qty: 1, amount: 0 });
     var r = {
       id: nextId++,
       date: date,
       vendor: vendor,
       receiptNo: "",
-      type: mType.value,
+      kind: modalKind,
+      type: modalKind === "revenue" ? "Revenue" : mType.value,
       paymentMethod: "",
       gst: 0,
       items: items,
