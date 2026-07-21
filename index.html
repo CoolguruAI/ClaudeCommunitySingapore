@@ -490,7 +490,7 @@
           { name: "Sandisk Ext MicroSD 128GB 190M", qty: 2, amount: 103.32 },
           { name: "Insta360 Z03, Luna Ultra, Flexicare Physical Card (1 Year)", qty: 1, amount: 64.00 }
         ],
-        receiptsFrom: "", purpose: "", approvedBy: ""
+        receiptsFrom: "Freddy", purpose: "For official use", approvedBy: "Freddy"
       },
       {
         id: 2, date: "2026-07-10", vendor: "Subway #40967-0", receiptNo: "1/A-470511",
@@ -502,7 +502,7 @@
           { name: "12\" Tuna Sub", qty: 1, amount: 13.30 },
           { name: "Avocado Caesar Chicken Ergo Bowl", qty: 1, amount: 10.50 }
         ],
-        receiptsFrom: "", purpose: "", approvedBy: ""
+        receiptsFrom: "Angie", purpose: "Community Volunteer 1st Meetup", approvedBy: "Freddy"
       },
       {
         id: 3, date: "2026-07-10", vendor: "Jollibee # Suntec", receiptNo: "Queue 4186",
@@ -514,7 +514,7 @@
           { name: "5pc Chicken Tenders", qty: 1, amount: 8.50 },
           { name: "Chicken Loaded Fries (Garlic Ranch)", qty: 1, amount: 7.50 }
         ],
-        receiptsFrom: "", purpose: "", approvedBy: ""
+        receiptsFrom: "Angie", purpose: "Community Volunteer 1st Meetup", approvedBy: "Freddy"
       },
       {
         id: 4, date: "2026-07-10", vendor: "Cold Storage (CS Suntec City)", receiptNo: "TR0139",
@@ -527,7 +527,7 @@
           { name: "Pokka Oolong Tea 1.5L (after discount)", qty: 1, amount: 2.35 },
           { name: "ATH Ayataka JGT 1.5L (after discount)", qty: 1, amount: 2.15 }
         ],
-        receiptsFrom: "", purpose: "", approvedBy: ""
+        receiptsFrom: "Angie", purpose: "Community Volunteer 1st Meetup", approvedBy: "Freddy"
       },
       {
         id: 5, date: "2026-07-11", vendor: "AI Capitol — Training Partnership", receiptNo: "",
@@ -535,14 +535,42 @@
         items: [
           { name: "Revenue share — \"Claude for Finance\" training (Lionel Sim, AI Capitol)", qty: 1, amount: 1500.00 }
         ],
-        receiptsFrom: "Lionel Sim (AI Capitol)", purpose: "Revenue share from \"Claude for Finance\" training, Sat 11 Jul 2026", approvedBy: ""
+        receiptsFrom: "Lionel Sim (AI Capitol)", purpose: "Revenue share from \"Claude for Finance\" training, Sat 11 Jul 2026", approvedBy: "Freddy"
+      },
+      {
+        id: 6, date: "2026-07-20", vendor: "Restaurant (Singapore 389731)", receiptNo: "A787757",
+        type: "Meals & Entertainment", paymentMethod: "Visa", gst: 10.02,
+        items: [
+          { name: "Cold Teh Halia", qty: 1, amount: 2.60 },
+          { name: "Oolong Tea", qty: 2, amount: 3.60 },
+          { name: "Water Chestnut (L)", qty: 2, amount: 8.00 },
+          { name: "Cold Teh O (L)", qty: 1, amount: 3.20 },
+          { name: "Cold Teh O Limau", qty: 1, amount: 3.00 },
+          { name: "Prawn Omelette", qty: 1, amount: 10.00 },
+          { name: "Hokkien Prawn Mee", qty: 2, amount: 15.00 },
+          { name: "Chicken Fried Rice", qty: 1, amount: 6.00 },
+          { name: "Butter Chicken Masala", qty: 1, amount: 8.00 },
+          { name: "Cheese Prata", qty: 2, amount: 7.00 },
+          { name: "Maggi Goreng", qty: 1, amount: 4.50 },
+          { name: "Maggi Goreng — add Chicken", qty: 1, amount: 2.00 },
+          { name: "Kway Teow Goreng", qty: 1, amount: 4.50 },
+          { name: "Kway Teow Goreng — add Chicken", qty: 1, amount: 2.00 },
+          { name: "Maggi Goreng", qty: 1, amount: 4.50 },
+          { name: "Maggi Goreng — add Chicken", qty: 1, amount: 2.00 },
+          { name: "Maggi Goreng", qty: 1, amount: 4.50 },
+          { name: "Maggi Goreng — add Mutton", qty: 1, amount: 3.00 },
+          { name: "Fried Carrot Cake", qty: 1, amount: 5.00 },
+          { name: "Satay Mutton", qty: 15, amount: 15.00 },
+          { name: "Sliced Fish Soup", qty: 1, amount: 8.00 }
+        ],
+        receiptsFrom: "Freddy", purpose: "Claude for Design event", approvedBy: "Freddy"
       }
     ],
     filters: { month: "all", type: "all", search: "" },
     collapsedMonths: {}
   };
 
-  var nextId = 6;
+  var nextId = 7;
   function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
   function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
