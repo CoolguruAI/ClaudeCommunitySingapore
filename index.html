@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Expense Tracker",
+  "schemaVersion": 1,
+  "description": "Expense tracking dashboard: itemized receipts grouped by month with editable \"receipts from / purpose / approved by\" fields, stat tiles, spend-by-month and spend-by-type charts, and filter/search by month or expense type.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -564,13 +573,29 @@
           { name: "Sliced Fish Soup", qty: 1, amount: 8.00 }
         ],
         receiptsFrom: "Freddy", purpose: "Claude for Design event", approvedBy: "Freddy"
+      },
+      {
+        id: 7, date: "2026-08-15", vendor: "AI Capitol — Training Partnership", receiptNo: "",
+        kind: "revenue", type: "Revenue", paymentMethod: "", gst: 0,
+        items: [
+          { name: "Revenue share — \"Claude for Marketing\" training (Lionel Sim, AI Capitol)", qty: 1, amount: 2040.00 }
+        ],
+        receiptsFrom: "Lionel Sim (AI Capitol)", purpose: "Revenue share from \"Claude for Marketing\" training, Sat 15 Aug 2026", approvedBy: "Freddy"
+      },
+      {
+        id: 8, date: "2026-08-17", vendor: "Banner Printing", receiptNo: "",
+        type: "Office & Supplies", paymentMethod: "", gst: 0,
+        items: [
+          { name: "Banner Printing", qty: 1, amount: 104.64 }
+        ],
+        receiptsFrom: "Freddy", purpose: "Banner Printing", approvedBy: "Freddy"
       }
     ],
     filters: { month: "all", type: "all", search: "" },
     collapsedMonths: {}
   };
 
-  var nextId = 7;
+  var nextId = 9;
   function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
   function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
