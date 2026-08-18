@@ -54,6 +54,7 @@
     --cat-6: #eb6834; /* Accommodation */
     --cat-7: #4a3aa7; /* Client & Marketing */
     --cat-8: #e34948; /* Other */
+    --cat-9: #687e25; /* Events & Venue */
   }
   @media (prefers-color-scheme: dark) {
     :root:where(:not([data-theme="light"])) .viz-root {
@@ -86,6 +87,7 @@
       --cat-6: #d95926;
       --cat-7: #9085e9;
       --cat-8: #e66767;
+      --cat-9: #b6cf6e;
     }
   }
   :root[data-theme="dark"] .viz-root {
@@ -118,6 +120,7 @@
     --cat-6: #d95926;
     --cat-7: #9085e9;
     --cat-8: #e66767;
+    --cat-9: #b6cf6e;
   }
 
   * { box-sizing: border-box; }
@@ -474,7 +477,8 @@
     { key: "Office & Supplies", color: "var(--cat-5)" },
     { key: "Accommodation", color: "var(--cat-6)" },
     { key: "Client & Marketing", color: "var(--cat-7)" },
-    { key: "Other", color: "var(--cat-8)" }
+    { key: "Other", color: "var(--cat-8)" },
+    { key: "Events & Venue", color: "var(--cat-9)" }
   ];
 
   function catColor(type){
@@ -583,19 +587,35 @@
         receiptsFrom: "Lionel Sim (AI Capitol)", purpose: "Revenue share from \"Claude for Marketing\" training, Sat 15 Aug 2026", approvedBy: "Freddy"
       },
       {
-        id: 8, date: "2026-08-17", vendor: "(To add vendor name here) Banner Printing", receiptNo: "(To add receipt ref here)",
-        type: "Office & Supplies", paymentMethod: "(To add payment mode here)", gst: 0,
+        id: 8, date: "2026-08-17", vendor: "(To add vendor name here)", receiptNo: "(To add receipt ref here)",
+        type: "Office & Supplies", paymentMethod: "Cash", gst: 0,
         items: [
           { name: "Banner Printing", qty: 1, amount: 104.64 }
         ],
         receiptsFrom: "Freddy", purpose: "Banner Printing", approvedBy: "Freddy"
+      },
+      {
+        id: 9, date: "2026-08-26", vendor: "Gourmet Supplies Pte Ltd", receiptNo: "I-196108",
+        type: "Groceries & Pantry", paymentMethod: "C.O.D.", gst: 18.82,
+        items: [
+          { name: "(BTL) Elements — Premium Drinking Water [500ML], 41 x [24s]CTN @ $5.10", qty: 41, amount: 227.92 }
+        ],
+        receiptsFrom: "Kimberly", purpose: "Claude 101 Live event", approvedBy: "Freddy"
+      },
+      {
+        id: 10, date: "2026-08-26", vendor: "LS Tentage Services", receiptNo: "1021",
+        type: "Events & Venue", paymentMethod: "", gst: 0,
+        items: [
+          { name: "Event tentage, chairs (850x PVC), tables, lighting & canvas rental — 2 Orchard Link, SCAPE", qty: 1, amount: 1700.00 }
+        ],
+        receiptsFrom: "Kimberly", purpose: "Claude 101 Live event", approvedBy: "Freddy"
       }
     ],
     filters: { month: "all", type: "all", search: "" },
     collapsedMonths: {}
   };
 
-  var nextId = 9;
+  var nextId = 11;
   function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
   function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
