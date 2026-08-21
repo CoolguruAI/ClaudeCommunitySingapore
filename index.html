@@ -609,13 +609,33 @@
           { name: "Event tentage, chairs (850x PVC), tables, lighting & canvas rental — 2 Orchard Link, SCAPE", qty: 1, amount: 1700.00 }
         ],
         receiptsFrom: "Kimberly", purpose: "Claude 101 Live event", approvedBy: "Freddy"
+      },
+      {
+        id: 11, date: "2026-08-18", vendor: "Shopee — Spark HD / pinkdayone.sg", receiptNo: "",
+        type: "Electronics & Equipment", paymentMethod: "", gst: 0,
+        items: [
+          { name: "【SG】Microphone Stand Adjustable Tripod (One Clip) — Spark HD", qty: 1, amount: 9.99 },
+          { name: "Pikdsg Professional Single Channel Passive DI Box — pinkdayone.sg", qty: 1, amount: 15.06 }
+        ],
+        receiptsFrom: "Angie", purpose: "Claude 101 Live event", approvedBy: "Freddy"
+      },
+      {
+        id: 12, date: "2026-08-18", vendor: "KOH CHONG HO PTE LTD (via Shopee)", receiptNo: "SPXSG064033980208",
+        type: "Groceries & Pantry", paymentMethod: "", gst: 0,
+        items: [
+          { name: "Khong Guan - ABC Biscuit 3.5kg -GT", qty: 2, amount: 29.15 },
+          { name: "Ice Gems 140G", qty: 2, amount: 5.20 },
+          { name: "Butterfly 110G", qty: 1, amount: 4.60 },
+          { name: "Other items / shipping (not itemized in order summary screenshot)", qty: 1, amount: 22.35 }
+        ],
+        receiptsFrom: "Kimberly", purpose: "Claude 101 Live event", approvedBy: "Freddy"
       }
     ],
     filters: { month: "all", type: "all", search: "" },
     collapsedMonths: {}
   };
 
-  var nextId = 11;
+  var nextId = 13;
   function fmt(n){ return "$" + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   function amountOf(r){ return r.items.reduce(function(s,i){ return s + i.amount; }, 0); }
   function monthKey(dateStr){ var d = new Date(dateStr+"T00:00:00"); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
